@@ -23,6 +23,8 @@ app = Flask(__name__)
 CORS(app, origins=[
     "https://lecture-to-text-qov0p5jjn-yoshis-projects-421cbceb.vercel.app",
     "https://lecture-to-text.vercel.app",
+    "https://lecture-to-text-omega.vercel.app",  # 新しいVercelプロジェクト
+    "https://lecture-to-text-7xtgo3bbl-yoshis-projects-421cbceb.vercel.app",  # 最新のVercelプロジェクト
     "http://localhost:3000"  # 開発用
 ])
 
