@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
         response = await fetch(`${CLOUD_RUN_API_URL}/process-audio`, {
           method: "POST",
           body: cloudRunFormData,
-          timeout: 300000, // 5分のタイムアウト
           headers: {
             'User-Agent': 'Vercel-API-Route/1.0'
           }
@@ -93,7 +92,7 @@ export async function POST(request: NextRequest) {
         const errorData = await response.json();
         errorMessage = errorData.error || response.statusText;
         console.error("Cloud Run API エラー:", errorData);
-      } catch (jsonError) {
+      } catch {
         // JSON解析に失敗した場合、レスポンステキストをそのまま使用
         const responseText = await response.text();
         errorMessage = responseText || response.statusText;
