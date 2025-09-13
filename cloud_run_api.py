@@ -1,5 +1,6 @@
 """
-Cloud Run用の動画処理APIサーバー
+Cloud Run用の音声処理APIサーバー
+自動デプロイテスト用のコメント追加
 """
 import os
 import json
