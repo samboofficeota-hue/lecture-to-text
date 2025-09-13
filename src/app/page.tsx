@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoTitle, setVideoTitle] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   // const [uploadProgress, setUploadProgress] = useState(0);
@@ -25,7 +25,7 @@ export default function Home() {
     status: "pending" | "in_progress" | "completed";
     result: string | null;
   }>>([
-    { id: 1, title: "動画URLを貼る または 音声ファイルをアップロードする", status: "pending", result: null },
+            { id: 1, title: "MP3音声ファイルをアップロードする", status: "pending", result: null },
     { id: 2, title: "文字起こしのドラフトを作成する（First-draft）", status: "pending", result: null },
     { id: 3, title: "講義録として整える（Final Version）", status: "pending", result: null },
     { id: 4, title: "サマリーを作成する", status: "pending", result: null },
@@ -48,10 +48,11 @@ export default function Home() {
   
   const [showRecords, setShowRecords] = useState(false);
 
-  const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setVideoUrl(event.target.value);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setVideoFile(file || null);
     setResult(null);
-    if (event.target.value.trim()) {
+    if (file) {
       updateProcessStep(1, "completed");
     } else {
       resetProcessSteps();
@@ -64,14 +65,14 @@ export default function Home() {
   };
 
   const handleProcess = async () => {
-    if (!videoUrl.trim()) {
-      alert("動画URLを入力してください");
+    if (!videoFile) {
+      alert("音声ファイルを選択してください");
       return;
     }
 
     setIsProcessing(true);
     // setUploadProgress(0);
-    setCurrentStep("動画URLを解析中...");
+    setCurrentStep("音声ファイルをアップロード中...");
     setEstimatedTime(null);
     setVideoInfo(null);
     
@@ -82,14 +83,13 @@ export default function Home() {
     try {
       // 進捗をシミュレート（実際の実装ではWebSocketでリアルタイム更新）
       const progressSteps = [
-        { step: "動画URLを解析中...", progress: 5 },
-        { step: "動画をダウンロード中...", progress: 15 },
-        { step: "動画の長さを確認中...", progress: 20 },
-        { step: "動画を10分ずつに分割中...", progress: 25 },
-        { step: "第1セグメントを処理中...", progress: 40 },
-        { step: "第2セグメントを処理中...", progress: 55 },
-        { step: "第3セグメントを処理中...", progress: 70 },
-        { step: "AI文字起こし処理中...", progress: 80 },
+        { step: "音声ファイルをアップロード中...", progress: 10 },
+        { step: "音声の長さを確認中...", progress: 20 },
+        { step: "音声を3分ずつに分割中...", progress: 30 },
+        { step: "第1セグメントを処理中...", progress: 50 },
+        { step: "第2セグメントを処理中...", progress: 65 },
+        { step: "第3セグメントを処理中...", progress: 80 },
+        { step: "AI文字起こし処理中...", progress: 85 },
         { step: "文章を改善中...", progress: 90 },
         { step: "講義録を生成中...", progress: 95 },
       ];
@@ -103,15 +103,13 @@ export default function Home() {
         }
       }, 3000);
 
-      const response = await fetch("/api/process-video", {
+      const formData = new FormData();
+      formData.append("audioFile", videoFile);
+      formData.append("title", videoTitle.trim() || "講義音声");
+
+      const response = await fetch("/api/process-audio", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          videoUrl: videoUrl.trim(),
-          title: videoTitle.trim() || "講義動画",
-        }),
+        body: formData,
       });
 
       clearInterval(progressInterval);
@@ -127,10 +125,10 @@ export default function Home() {
       const data = await response.json();
       setResult(data.transcript);
       
-      // 動画情報を保存
-      if (data.videoDuration && data.segmentCount) {
+      // 音声情報を保存
+      if (data.audioDuration && data.segmentCount) {
         setVideoInfo({
-          duration: data.videoDuration,
+          duration: data.audioDuration,
           segmentCount: data.segmentCount
         });
       }
@@ -160,13 +158,8 @@ export default function Home() {
     }
   };
 
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return url.includes('zoom.us') || url.includes('youtube.com') || url.includes('youtu.be');
-    } catch {
-      return false;
-    }
+  const isValidAudioFile = (file: File) => {
+    return file.type === 'audio/mpeg' || file.type === 'audio/mp3' || file.name.toLowerCase().endsWith('.mp3');
   };
 
   // プロセスステップを更新する関数
@@ -204,17 +197,17 @@ export default function Home() {
   };
 
   // 講義録を保存する関数
-  const saveLectureRecord = (data: { title: string; videoUrl: string; firstDraft: string; transcript: string; videoDuration?: number; segmentCount?: number }) => {
+  const saveLectureRecord = (data: { title: string; audioFileName: string; firstDraft: string; transcript: string; audioDuration?: number; segmentCount?: number }) => {
     const newRecord = {
       id: Date.now().toString(),
-      title: data.title || "講義動画",
-      videoUrl: data.videoUrl,
+      title: data.title || "講義音声",
+      videoUrl: data.audioFileName, // 音声ファイル名を表示
       firstDraft: data.firstDraft || "",
       finalTranscript: data.transcript || "",
       summary: null, // 将来実装
       materials: null, // 将来実装
       createdAt: new Date().toLocaleString('ja-JP'),
-      videoDuration: data.videoDuration || 0,
+      videoDuration: data.audioDuration || 0,
       segmentCount: data.segmentCount || 0,
     };
     
@@ -255,12 +248,12 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            講義動画から教材自動生成
-          </h1>
-          <p className="text-xl text-gray-600">
-            ZOOM録画やYouTube動画のリンクから、講義録や教材を自動で生成しましょう
-          </p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              講義音声から教材自動生成
+            </h1>
+            <p className="text-xl text-gray-600">
+              MP3音声ファイルから、講義録や教材を自動で生成しましょう
+            </p>
           <div className="mt-6">
             <button
               onClick={() => setShowRecords(!showRecords)}
@@ -475,28 +468,32 @@ export default function Home() {
 
         {!showRecords && (
           <div className="bg-white rounded-lg shadow-lg p-8">
-            {/* 動画URL入力エリア */}
+            {/* 音声ファイルアップロードエリア */}
           <div className="space-y-6">
             <div>
-              <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                動画URL
+              <label htmlFor="audioFile" className="block text-sm font-medium text-gray-700 mb-2">
+                MP3音声ファイル
               </label>
               <input
-                type="url"
-                id="videoUrl"
-                value={videoUrl}
-                onChange={handleUrlChange}
-                placeholder="https://us06web.zoom.us/rec/share/... または https://www.youtube.com/watch?v=..."
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 ${
-                  videoUrl && !isValidUrl(videoUrl) 
+                type="file"
+                id="audioFile"
+                accept=".mp3,audio/mpeg"
+                onChange={handleFileChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
+                  videoFile && !isValidAudioFile(videoFile) 
                     ? "border-red-300 bg-red-50" 
                     : "border-gray-300 bg-white"
                 }`}
                 disabled={isProcessing}
               />
-              {videoUrl && !isValidUrl(videoUrl) && (
+              {videoFile && !isValidAudioFile(videoFile) && (
                 <p className="mt-1 text-sm text-red-600">
-                  ZOOMまたはYouTubeのURLを入力してください
+                  MP3音声ファイルを選択してください
+                </p>
+              )}
+              {videoFile && (
+                <p className="mt-1 text-sm text-green-600">
+                  選択されたファイル: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
             </div>
@@ -520,7 +517,7 @@ export default function Home() {
             <div className="text-center">
               <button
                 onClick={handleProcess}
-                disabled={!videoUrl.trim() || !isValidUrl(videoUrl) || isProcessing}
+                disabled={!videoFile || !isValidAudioFile(videoFile) || isProcessing}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-8 rounded-lg transition-colors"
               >
                 {isProcessing ? "処理中..." : "講義録を生成"}
@@ -548,13 +545,13 @@ export default function Home() {
                   </div>
                 )}
                 
-                {/* 推定時間と動画情報 */}
+                {/* 推定時間と音声情報 */}
                 {estimatedTime && (
                   <div className="space-y-2 text-sm text-gray-600">
                     <p>推定処理時間: 約{estimatedTime}分</p>
                     {videoInfo && (
                       <>
-                        <p>動画の長さ: {Math.floor(videoInfo.duration / 60)}分{videoInfo.duration % 60}秒</p>
+                        <p>音声の長さ: {Math.floor(videoInfo.duration / 60)}分{videoInfo.duration % 60}秒</p>
                         <p>セグメント数: {videoInfo.segmentCount}個</p>
                       </>
                     )}
@@ -606,7 +603,7 @@ export default function Home() {
                   }}
                   className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                 >
-                  新しい動画を処理
+                  新しい音声を処理
                 </button>
               </div>
             </div>
@@ -623,8 +620,8 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">動画リンク入力</h3>
-            <p className="text-gray-600">ZOOM録画やYouTube動画のリンクを簡単に入力</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">音声ファイルアップロード</h3>
+            <p className="text-gray-600">MP3音声ファイルを簡単にアップロード</p>
           </div>
           <div className="text-center">
             <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
