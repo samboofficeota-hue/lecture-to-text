@@ -4,7 +4,7 @@
 # 使用方法: ./deploy-cloud-run.sh
 
 # 設定
-PROJECT_ID="your-gcp-project-id"
+PROJECT_ID="lecture-to-text-472009"
 SERVICE_NAME="lecture-to-text-api"
 REGION="asia-northeast1"
 IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME"
