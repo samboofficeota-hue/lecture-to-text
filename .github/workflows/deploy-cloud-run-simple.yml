@@ -1,0 +1,64 @@
+name: Deploy to Cloud Run (Simple)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'cloud_run_api.py'
+      - 'requirements.txt'
+      - 'Dockerfile'
+      - 'text_enhancer.py'
+      - 'config.py'
+      - 'deploy-cloud-run.sh'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: lecture-to-text-472009
+  SERVICE_NAME: lecture-to-text-api
+  REGION: asia-northeast1
+  IMAGE_NAME: gcr.io/lecture-to-text-472009/lecture-to-text-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup Google Cloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Deploy using manual script approach
+      run: |
+        echo "🚀 Cloud Run デプロイを開始します..."
+        
+        # プロジェクトIDを設定
+        echo "📝 プロジェクトIDを設定中..."
+        gcloud config set project ${{ env.PROJECT_ID }}
+        
+        # Dockerイメージをビルド
+        echo "🔨 Dockerイメージをビルド中..."
+        gcloud builds submit --tag ${{ env.IMAGE_NAME }} .
+        
+        # Cloud Runにデプロイ
+        echo "☁️ Cloud Runにデプロイ中..."
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
+          --image ${{ env.IMAGE_NAME }} \
+          --platform managed \
+          --region ${{ env.REGION }} \
+          --allow-unauthenticated \
+          --memory 4Gi \
+          --cpu 2 \
+          --timeout 3600 \
+          --max-instances 10
+        
+        echo "✅ デプロイ完了！"
+        echo "🌐 サービスURL: https://${{ env.SERVICE_NAME }}-${{ env.REGION }}-${{ env.PROJECT_ID }}.a.run.app"
