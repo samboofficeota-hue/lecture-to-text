@@ -25,6 +25,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Check secrets
+      run: |
+        echo "Checking if GCP_SA_KEY secret is set..."
+        if [ -z "${{ secrets.GCP_SA_KEY }}" ]; then
+          echo "ERROR: GCP_SA_KEY secret is not set!"
+          exit 1
+        else
+          echo "GCP_SA_KEY secret is set (length: ${#GCP_SA_KEY})"
+        fi
+
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
@@ -35,30 +45,20 @@ jobs:
       with:
         project_id: ${{ env.PROJECT_ID }}
 
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker
 
     - name: Verify authentication
       run: |
         echo "Verifying Google Cloud authentication..."
-        gcloud auth list
-        gcloud config get-value project
+        gcloud auth list || (echo "gcloud auth list failed" && exit 1)
+        gcloud config get-value project || (echo "gcloud config get-value project failed" && exit 1)
         echo "Testing gcloud commands..."
-        gcloud projects describe ${{ env.PROJECT_ID }}
+        gcloud projects describe ${{ env.PROJECT_ID }} || (echo "gcloud projects describe failed" && exit 1)
 
-    - name: Check Dockerfile
+    - name: Build and push Docker image using Cloud Build
       run: |
-        echo "Checking Dockerfile..."
-        ls -la
-        cat Dockerfile
-
-    - name: Build and push Docker image
-      run: |
-        echo "Building Docker image..."
-        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} . || (echo "Docker build failed" && exit 1)
-        echo "Pushing Docker image to GCR..."
-        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} || (echo "Docker push failed" && exit 1)
-        echo "Docker image pushed successfully"
+        echo "Building and pushing Docker image using Cloud Build..."
+        gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} . || (echo "Cloud Build failed" && exit 1)
+        echo "Docker image built and pushed successfully"
 
     - name: Deploy to Cloud Run
       run: |
@@ -67,8 +67,9 @@ jobs:
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
           --platform managed \
           --region ${{ env.REGION }} \
-          --memory 16Gi \
-          --cpu 4 \
+          --memory 4Gi \
+          --cpu 2 \
+          --timeout 3600 \
           --max-instances 10 \
           --allow-unauthenticated
         echo "Cloud Run deployment completed successfully"
