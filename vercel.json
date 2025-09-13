@@ -1,11 +1,1 @@
-{
-  "functions": {
-    "src/app/api/process-audio/route.ts": {
-      "maxDuration": 300,
-      "memory": 1024
-    }
-  },
-  "limits": {
-    "maxRequestSize": "100mb"
-  }
-}
+{}
