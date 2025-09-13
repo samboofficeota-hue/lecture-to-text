@@ -13,9 +13,21 @@ from faster_whisper import WhisperModel
 import openai
 from text_enhancer import TextEnhancer
 import config
+import hashlib
+import hmac
+import time
 
 app = Flask(__name__)
-CORS(app)
+
+# セキュリティ強化: 特定のOriginのみ許可
+CORS(app, origins=[
+    "https://lecture-to-text-qov0p5jjn-yoshis-projects-421cbceb.vercel.app",
+    "https://lecture-to-text.vercel.app",
+    "http://localhost:3000"  # 開発用
+])
+
+# APIキー設定
+API_KEY = os.getenv('API_KEY', 'default-secret-key-change-this')
 
 # ファイルアップロードサイズ制限を設定（100MB）
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB
@@ -99,10 +111,22 @@ def health_check():
     """ヘルスチェック"""
     return jsonify({"status": "healthy"})
 
+def verify_api_key():
+    """APIキーを検証"""
+    api_key = request.headers.get('X-API-Key')
+    if not api_key or api_key != API_KEY:
+        return jsonify({"error": "Invalid API key"}), 401
+    return None
+
 @app.route('/process-audio', methods=['POST'])
 def process_audio():
     """音声ファイル処理のメインエンドポイント"""
     try:
+        # APIキー検証
+        auth_error = verify_api_key()
+        if auth_error:
+            return auth_error
+        
         # ファイルアップロードを取得
         if 'audioFile' not in request.files:
             return jsonify({"error": "audioFile is required"}), 400

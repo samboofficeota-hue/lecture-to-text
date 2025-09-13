@@ -33,11 +33,12 @@ gcloud run deploy $SERVICE_NAME \
     --platform managed \
     --region $REGION \
     --allow-unauthenticated \
-    --memory 4Gi \
-    --cpu 2 \
+    --memory 16Gi \
+    --cpu 4 \
     --timeout 3600 \
     --max-instances 10 \
     --set-env-vars "OPENAI_API_KEY=\$OPENAI_API_KEY" \
+    --set-env-vars "API_KEY=$API_KEY" \
     --set-env-vars "MAX_CONTENT_LENGTH=100MB" \
     --set-env-vars "UPLOAD_MAX_SIZE=100MB" \
     --set-env-vars "FLASK_MAX_CONTENT_LENGTH=100MB" \

@@ -107,7 +107,8 @@ export default function Home() {
         method: "POST",
         body: formData,
         headers: {
-          'User-Agent': 'Vercel-Client/1.0'
+          'User-Agent': 'Vercel-Client/1.0',
+          'X-API-Key': 'test-api-key-12345'  // 本番環境では環境変数から取得
         }
       });
 
