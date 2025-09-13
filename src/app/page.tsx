@@ -25,25 +25,18 @@ export default function Home() {
     status: "pending" | "in_progress" | "completed";
     result: string | null;
   }>>([
-            { id: 1, title: "MP3音声ファイルをアップロードする", status: "pending", result: null },
-    { id: 2, title: "文字起こしのドラフトを作成する（First-draft）", status: "pending", result: null },
-    { id: 3, title: "講義録として整える（Final Version）", status: "pending", result: null },
-    { id: 4, title: "サマリーを作成する", status: "pending", result: null },
-    { id: 5, title: "教材を作成する", status: "pending", result: null },
+    { id: 1, title: "MP3音声ファイルをアップロードする", status: "pending", result: null },
+    { id: 2, title: "AI文字起こし処理中...", status: "pending", result: null },
+    { id: 3, title: "講義録を生成中...", status: "pending", result: null },
   ]);
 
-  // 講義録一覧の状態管理
+  // 講義録一覧の状態管理（簡略化）
   const [lectureRecords, setLectureRecords] = useState<Array<{
     id: string;
     title: string;
-    videoUrl: string;
-    firstDraft: string;
     finalTranscript: string;
-    summary: string | null;
-    materials: string | null;
     createdAt: string;
-    videoDuration: number;
-    segmentCount: number;
+    audioDuration: number;
   }>>([]);
   
   const [showRecords, setShowRecords] = useState(false);
@@ -138,8 +131,8 @@ export default function Home() {
         startCountdown(data.estimatedProcessingTime * 60);
       }
       
-      // ステップ2を完了、ステップ3を完了としてマーク
-      updateProcessStep(2, "completed", data.firstDraft);
+      // ステップ2と3を完了としてマーク
+      updateProcessStep(2, "completed");
       updateProcessStep(3, "completed", data.transcript);
       
       // 講義録を保存
@@ -196,19 +189,14 @@ export default function Home() {
     setStartTime(null);
   };
 
-  // 講義録を保存する関数
-  const saveLectureRecord = (data: { title: string; audioFileName: string; firstDraft: string; transcript: string; audioDuration?: number; segmentCount?: number }) => {
+  // 講義録を保存する関数（簡略化）
+  const saveLectureRecord = (data: { title: string; transcript: string; audioDuration?: number }) => {
     const newRecord = {
       id: Date.now().toString(),
       title: data.title || "講義音声",
-      videoUrl: data.audioFileName, // 音声ファイル名を表示
-      firstDraft: data.firstDraft || "",
       finalTranscript: data.transcript || "",
-      summary: null, // 将来実装
-      materials: null, // 将来実装
       createdAt: new Date().toLocaleString('ja-JP'),
-      videoDuration: data.audioDuration || 0,
-      segmentCount: data.segmentCount || 0,
+      audioDuration: data.audioDuration || 0,
     };
     
     setLectureRecords(prev => [newRecord, ...prev]);
@@ -328,19 +316,10 @@ export default function Home() {
                         講義名
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        動画URL
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        First-draft
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         講義録
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        サマリー
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        教材
+                        音声時間
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         作成日時
@@ -357,36 +336,6 @@ export default function Home() {
                           {record.title}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <a 
-                            href={record.videoUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 truncate block max-w-xs"
-                          >
-                            {record.videoUrl}
-                          </a>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {record.firstDraft ? (
-                            <button
-                              onClick={() => {
-                                const blob = new Blob([record.firstDraft], { type: "text/plain" });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = `${record.title}-first-draft.txt`;
-                                a.click();
-                                URL.revokeObjectURL(url);
-                              }}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                            >
-                              ダウンロード
-                            </button>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {record.finalTranscript ? (
                             <button
                               onClick={() => {
@@ -394,7 +343,7 @@ export default function Home() {
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement("a");
                                 a.href = url;
-                                a.download = `${record.title}-final-transcript.txt`;
+                                a.download = `${record.title}-transcript.txt`;
                                 a.click();
                                 URL.revokeObjectURL(url);
                               }}
@@ -407,44 +356,7 @@ export default function Home() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {record.summary ? (
-                            <button
-                              onClick={() => {
-                                const blob = new Blob([record.summary || ""], { type: "text/plain" });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = `${record.title}-summary.txt`;
-                                a.click();
-                                URL.revokeObjectURL(url);
-                              }}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                            >
-                              ダウンロード
-                            </button>
-                          ) : (
-                            <span className="text-gray-400">未作成</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {record.materials ? (
-                            <button
-                              onClick={() => {
-                                const blob = new Blob([record.materials || ""], { type: "text/plain" });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = `${record.title}-materials.txt`;
-                                a.click();
-                                URL.revokeObjectURL(url);
-                              }}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                            >
-                              ダウンロード
-                            </button>
-                          ) : (
-                            <span className="text-gray-400">未作成</span>
-                          )}
+                          {Math.floor(record.audioDuration / 60)}分{record.audioDuration % 60}秒
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {record.createdAt}

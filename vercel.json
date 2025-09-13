@@ -1,8 +1,5 @@
 {
   "functions": {
-    "src/app/api/process-video/route.ts": {
-      "maxDuration": 300
-    },
     "src/app/api/process-audio/route.ts": {
       "maxDuration": 300,
       "memory": 1024
@@ -10,6 +7,5 @@
   },
   "limits": {
     "maxRequestSize": "100mb"
-  },
-  "regions": ["iad1"]
+  }
 }
