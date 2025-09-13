@@ -17,6 +17,14 @@ import config
 app = Flask(__name__)
 CORS(app)
 
+# ファイルアップロードサイズ制限を設定（100MB）
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB
+
+@app.errorhandler(413)
+def too_large(e):
+    """ファイルサイズが大きすぎる場合のエラーハンドラー"""
+    return jsonify({"error": "File too large. Maximum size is 100MB"}), 413
+
 # Whisperモデルの初期化（グローバル変数として）
 whisper_model = None
 
@@ -104,6 +112,14 @@ def process_audio():
         
         if audio_file.filename == '':
             return jsonify({"error": "No file selected"}), 400
+        
+        # ファイルサイズをチェック
+        audio_file.seek(0, 2)  # ファイルの末尾に移動
+        file_size = audio_file.tell()
+        audio_file.seek(0)  # ファイルの先頭に戻す
+        
+        if file_size > 100 * 1024 * 1024:  # 100MB
+            return jsonify({"error": "File too large. Maximum size is 100MB"}), 413
         
         print(f"音声処理開始: {title}")
         print(f"ファイル名: {audio_file.filename}")
