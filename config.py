@@ -17,8 +17,8 @@ CHATGPT_MODEL = os.getenv("CHATGPT_MODEL", "gpt-4")
 CHATGPT_TEMPERATURE = float(os.getenv("CHATGPT_TEMPERATURE", "0.3"))
 CHATGPT_MAX_TOKENS = int(os.getenv("CHATGPT_MAX_TOKENS", "4000"))
 
-# Whisper設定
-WHISPER_MODEL = os.getenv("WHISPER_MODEL", "tiny")
+# Whisper設定（高精度設定）
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "large-v3")  # より高精度なモデル
 WHISPER_DEVICE = os.getenv("WHISPER_DEVICE", "auto")
 WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "auto")
 
