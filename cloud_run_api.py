@@ -1,6 +1,6 @@
 """
 Cloud Run用の音声処理APIサーバー
-GitHub Actions自動デプロイテスト用のコメント追加
+GitHub Actions自動デプロイテスト用のコメント追加（トリガーテスト）
 """
 import os
 import json
