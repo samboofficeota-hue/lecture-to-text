@@ -16,6 +16,7 @@ env:
   PROJECT_ID: lecture-to-text-472009
   SERVICE_NAME: lecture-to-text-api
   REGION: asia-northeast1
+  CLOUDSDK_APP_CLOUD_BUILD_TIMEOUT: 1200
 
 jobs:
   deploy:
@@ -57,7 +58,10 @@ jobs:
     - name: Build and push Docker image using Cloud Build
       run: |
         echo "Building and pushing Docker image using Cloud Build..."
-        gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} . || (echo "Cloud Build failed" && exit 1)
+        echo "Project ID: ${{ env.PROJECT_ID }}"
+        echo "Service Name: ${{ env.SERVICE_NAME }}"
+        echo "Git SHA: ${{ github.sha }}"
+        gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} . --verbosity=debug || (echo "Cloud Build failed" && exit 1)
         echo "Docker image built and pushed successfully"
 
     - name: Deploy to Cloud Run
