@@ -34,9 +34,10 @@ def init_whisper():
 def download_video(url, output_path):
     """動画をダウンロード"""
     ydl_opts = {
-        'format': 'best[height<=720]',  # 720p以下で最適化
+        'format': 'worst[height<=480]',  # 480p以下で最適化
         'outtmpl': output_path,
         'noplaylist': True,
+        'max_filesize': 100 * 1024 * 1024,  # 100MB制限
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -52,7 +53,7 @@ def get_video_duration(video_path):
     data = json.loads(result.stdout)
     return float(data['format']['duration'])
 
-def create_video_segments(video_path, segment_duration=360):  # 6分 = 360秒
+def create_video_segments(video_path, segment_duration=180):  # 3分 = 180秒
     """動画をセグメントに分割"""
     duration = get_video_duration(video_path)
     segments = []
@@ -82,7 +83,7 @@ def extract_audio_segment(video_path, start_time, duration, output_path):
 
 def transcribe_audio(audio_path):
     """音声を文字起こし"""
-    segments, info = whisper_model.transcribe(audio_path, beam_size=5)
+    segments, info = whisper_model.transcribe(audio_path, beam_size=1, best_of=1)
     
     transcript_parts = []
     for segment in segments:
