@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const CLOUD_RUN_API_URL = "https://lecture-to-text-api-1088729528504.asia-northeast1.run.app";
+const CLOUD_RUN_API_URL = process.env.CLOUD_RUN_API_URL || "https://lecture-to-text-api-1088729528504.asia-northeast1.run.app";
 
 export async function POST(request: NextRequest) {
   try {
