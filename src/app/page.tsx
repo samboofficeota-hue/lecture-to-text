@@ -100,9 +100,15 @@ export default function Home() {
       formData.append("audioFile", videoFile);
       formData.append("title", videoTitle.trim() || "講義音声");
 
-      const response = await fetch("/api/process-audio", {
+      // Vercelの制限を回避するため、直接Cloud Runにアップロード
+      const CLOUD_RUN_API_URL = "https://lecture-to-text-api-1088729528504.asia-northeast1.run.app";
+      
+      const response = await fetch(`${CLOUD_RUN_API_URL}/process-audio`, {
         method: "POST",
         body: formData,
+        headers: {
+          'User-Agent': 'Vercel-Client/1.0'
+        }
       });
 
       clearInterval(progressInterval);
