@@ -10,6 +10,7 @@ on:
       - 'text_enhancer.py'
       - 'config.py'
       - 'deploy-cloud-run.sh'
+      - '.github/workflows/deploy-cloud-run-simple.yml'
   workflow_dispatch:
 
 env:
