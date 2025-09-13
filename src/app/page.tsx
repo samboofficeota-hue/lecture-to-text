@@ -102,6 +102,7 @@ export default function Home() {
 
       // Vercelの制限を回避するため、直接Cloud Runにアップロード
       const CLOUD_RUN_API_URL = "https://lecture-to-text-api-1088729528504.asia-northeast1.run.app";
+      console.log("Direct Cloud Run upload:", CLOUD_RUN_API_URL);
       
       const response = await fetch(`${CLOUD_RUN_API_URL}/process-audio`, {
         method: "POST",
