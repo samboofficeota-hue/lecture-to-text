@@ -4,6 +4,15 @@ const CLOUD_RUN_API_URL = process.env.CLOUD_RUN_API_URL || "https://lecture-to-t
 
 export async function POST(request: NextRequest) {
   try {
+    // リクエストサイズの事前チェック
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 100 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "ファイルサイズが大きすぎます。100MB以下にしてください。" },
+        { status: 413 }
+      );
+    }
+
     const formData = await request.formData();
     const audioFile = formData.get("audioFile") as File;
     const title = formData.get("title") as string;
@@ -19,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (audioFile.size > 100 * 1024 * 1024) {
       return NextResponse.json(
         { error: "ファイルサイズが大きすぎます。100MB以下にしてください。" },
-        { status: 400 }
+        { status: 413 }
       );
     }
 
