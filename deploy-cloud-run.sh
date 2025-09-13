@@ -37,7 +37,11 @@ gcloud run deploy $SERVICE_NAME \
     --cpu 2 \
     --timeout 3600 \
     --max-instances 10 \
-    --set-env-vars "OPENAI_API_KEY=your-openai-api-key"
+    --set-env-vars "OPENAI_API_KEY=your-openai-api-key" \
+    --set-env-vars "MAX_CONTENT_LENGTH=100MB" \
+    --set-env-vars "UPLOAD_MAX_SIZE=100MB" \
+    --set-env-vars "FLASK_MAX_CONTENT_LENGTH=100MB" \
+    --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
 
 echo "✅ デプロイ完了！"
 echo "🌐 サービスURL: https://$SERVICE_NAME-$REGION-$PROJECT_ID.a.run.app"
