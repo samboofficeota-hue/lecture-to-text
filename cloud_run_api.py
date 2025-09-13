@@ -7,7 +7,7 @@ import tempfile
 import subprocess
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import yt_dlp
+# yt_dlpは不要になったため削除
 from faster_whisper import WhisperModel
 import openai
 from text_enhancer import TextEnhancer
@@ -31,31 +31,25 @@ def init_whisper():
         )
         print("Whisperモデル初期化完了")
 
-def download_video(url, output_path):
-    """動画をダウンロード"""
-    ydl_opts = {
-        'format': 'worst[height<=480]',  # 480p以下で最適化
-        'outtmpl': output_path,
-        'noplaylist': True,
-        'max_filesize': 100 * 1024 * 1024,  # 100MB制限
-    }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+# 動画ダウンロード機能は削除（音声ファイルアップロードに変更）
 
-def get_video_duration(video_path):
-    """動画の長さを取得"""
+# 動画関連の関数は削除（音声ファイル処理に変更）
+
+def get_audio_duration(audio_path):
+    """音声の長さを取得"""
     cmd = [
         'ffprobe', '-v', 'quiet', '-print_format', 'json',
-        '-show_format', video_path
+        '-show_format', audio_path
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     data = json.loads(result.stdout)
     return float(data['format']['duration'])
 
-def create_video_segments(video_path, segment_duration=180):  # 3分 = 180秒
-    """動画をセグメントに分割"""
-    duration = get_video_duration(video_path)
+# 動画セグメント分割機能は削除（音声ファイル処理に変更）
+
+def create_audio_segments(audio_path, segment_duration=180):  # 3分 = 180秒
+    """音声をセグメントに分割"""
+    duration = get_audio_duration(audio_path)
     segments = []
     
     for start_time in range(0, int(duration), segment_duration):
@@ -68,13 +62,13 @@ def create_video_segments(video_path, segment_duration=180):  # 3分 = 180秒
     
     return segments
 
-def extract_audio_segment(video_path, start_time, duration, output_path):
-    """動画から音声セグメントを抽出"""
+def extract_audio_segment(audio_path, start_time, duration, output_path):
+    """音声からセグメントを抽出"""
     cmd = [
-        'ffmpeg', '-i', video_path,
+        'ffmpeg', '-i', audio_path,
         '-ss', str(start_time),
         '-t', str(duration),
-        '-vn', '-acodec', 'pcm_s16le',
+        '-acodec', 'pcm_s16le',
         '-ar', '16000',  # Whisper推奨サンプルレート
         '-ac', '1',      # モノラル
         '-y', output_path
@@ -96,35 +90,38 @@ def health_check():
     """ヘルスチェック"""
     return jsonify({"status": "healthy"})
 
-@app.route('/process-video', methods=['POST'])
-def process_video():
-    """動画処理のメインエンドポイント"""
+@app.route('/process-audio', methods=['POST'])
+def process_audio():
+    """音声ファイル処理のメインエンドポイント"""
     try:
-        data = request.get_json()
-        video_url = data.get('videoUrl')
-        title = data.get('title', 'Untitled')
+        # ファイルアップロードを取得
+        if 'audioFile' not in request.files:
+            return jsonify({"error": "audioFile is required"}), 400
         
-        if not video_url:
-            return jsonify({"error": "videoUrl is required"}), 400
+        audio_file = request.files['audioFile']
+        title = request.form.get('title', 'Untitled')
         
-        print(f"動画処理開始: {title}")
-        print(f"URL: {video_url}")
+        if audio_file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        
+        print(f"音声処理開始: {title}")
+        print(f"ファイル名: {audio_file.filename}")
         
         # Whisperモデルを初期化
         init_whisper()
         
         # 一時ディレクトリを作成
         with tempfile.TemporaryDirectory() as temp_dir:
-            video_path = os.path.join(temp_dir, "video.mp4")
-            print("動画ダウンロード中...")
-            download_video(video_url, video_path)
+            # 音声ファイルを保存
+            audio_path = os.path.join(temp_dir, "audio.mp3")
+            audio_file.save(audio_path)
             
-            # 動画の長さを取得
-            duration = get_video_duration(video_path)
-            print(f"動画の長さ: {duration:.1f}秒")
+            # 音声の長さを取得
+            duration = get_audio_duration(audio_path)
+            print(f"音声の長さ: {duration:.1f}秒")
             
             # セグメントに分割
-            segments = create_video_segments(video_path)
+            segments = create_audio_segments(audio_path)
             print(f"セグメント数: {len(segments)}")
             
             # 各セグメントを処理
@@ -132,15 +129,15 @@ def process_video():
             for i, segment in enumerate(segments):
                 print(f"セグメント {i+1}/{len(segments)} 処理中...")
                 
-                audio_path = os.path.join(temp_dir, f"segment_{i}.wav")
+                segment_audio_path = os.path.join(temp_dir, f"segment_{i}.wav")
                 extract_audio_segment(
-                    video_path, 
+                    audio_path, 
                     segment['start'], 
                     segment['duration'], 
-                    audio_path
+                    segment_audio_path
                 )
                 
-                transcript = transcribe_audio(audio_path)
+                transcript = transcribe_audio(segment_audio_path)
                 all_transcripts.append(transcript)
             
             # 全セグメントの文字起こしを結合
@@ -155,8 +152,9 @@ def process_video():
             # 結果を返す
             result = {
                 "title": title,
-                "videoUrl": video_url,
-                "duration": duration,
+                "audioFileName": audio_file.filename,
+                "audioDuration": duration,
+                "segmentCount": len(segments),
                 "firstDraft": first_draft,
                 "transcript": enhanced_result.get('enhanced_text', first_draft),
                 "technicalTerms": enhanced_result.get('technical_terms', []),
