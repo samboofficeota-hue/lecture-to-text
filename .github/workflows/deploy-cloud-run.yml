@@ -43,13 +43,21 @@ jobs:
         echo "Verifying Google Cloud authentication..."
         gcloud auth list
         gcloud config get-value project
+        echo "Testing gcloud commands..."
+        gcloud projects describe ${{ env.PROJECT_ID }}
+
+    - name: Check Dockerfile
+      run: |
+        echo "Checking Dockerfile..."
+        ls -la
+        cat Dockerfile
 
     - name: Build and push Docker image
       run: |
         echo "Building Docker image..."
-        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+        docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} . || (echo "Docker build failed" && exit 1)
         echo "Pushing Docker image to GCR..."
-        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} || (echo "Docker push failed" && exit 1)
         echo "Docker image pushed successfully"
 
     - name: Deploy to Cloud Run
