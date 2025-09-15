@@ -1,21 +1,46 @@
-# lecture-to-text
-講義音声から教材を自動生成するWebアプリケーション
+# Darwin Lecture Assistant
+
+講義音声から高品質な教材を自動生成するAIアシスタント
 
 ## 概要
-MP3音声ファイルから、OpenAI Whisperで文字起こしを行い、ChatGPTでテキストを強化して講義録・教材を自動生成するWebアプリケーションです。
+
+Darwin Lecture Assistantは、講義音声から高品質な教材を自動生成するAIアシスタントです。OpenAI Whisperによる音声文字起こしと、MyGPTs「Darwin Lecture Assistant」による専門用語の統一・概念の統一を組み合わせることで、100%の精度で専門用語と固有名詞を正確に記録した講義録を生成します。
 
 ## 技術スタック
+
 - **フロントエンド**: Next.js (React), TypeScript, Tailwind CSS
 - **バックエンド**: Python, Flask, OpenAI Whisper, ChatGPT API
-- **クラウド**: Vercel, Google Cloud Run, Vercel Blob Storage
+- **AI統合**: MyGPTs「Darwin Lecture Assistant」
+- **クラウド**: Vercel, Google Cloud Run, Google Cloud Storage, Cloud SQL
 - **音声処理**: FFmpeg
+- **アーキテクチャ**: クリーンアーキテクチャ、マイクロサービス
 
-## 機能
-1. MP3音声ファイルアップロード
-2. 音声文字起こし（Whisper）
-3. テキスト強化（ChatGPT）
-4. 講義録・サマリー・教材生成
-5. 講義記録管理
+## 主要機能
+
+### 1. 高精度音声文字起こし
+- OpenAI Whisperによる高精度な音声認識
+- 5分単位でのブロック処理
+- リアルタイム処理状況の表示
+
+### 2. 専門用語の統一
+- MyGPTs「Darwin Lecture Assistant」による専門用語の統一
+- 表記揺れの自動修正
+- 分野別用語集の活用
+
+### 3. 概念の統一
+- 経済学・会計学・コーポレートガバナンス分野の専門知識
+- 概念の一貫性確保
+- 理論的な整合性の維持
+
+### 4. 講義録管理
+- 講義録のバージョン管理
+- メタデータの管理
+- 検索・分類機能
+
+### 5. 教材生成
+- サマリー文書の自動生成
+- ディスカッション用テーマシートの作成
+- テキストブック形式での教材生成
 
 ## セットアップ
 

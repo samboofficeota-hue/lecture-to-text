@@ -42,7 +42,10 @@ class MyGPTAdapter(RAGInterface):
                 base_url=base_url
             )
             
-            logger.info("My GPTs client initialized successfully")
+            # MyGPTsのIDを設定
+            self.mygpt_id = self.config.get('mygpt_id', 'g-68c7fe5c36b88191b0f242cc9c5c65aa')
+            
+            logger.info(f"My GPTs client initialized successfully (ID: {self.mygpt_id})")
             
         except Exception as e:
             logger.error(f"Failed to initialize My GPTs client: {e}")
