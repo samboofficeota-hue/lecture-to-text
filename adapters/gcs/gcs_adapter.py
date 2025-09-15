@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from google.cloud import storage
 from google.cloud.exceptions import NotFound, GoogleCloudError
 
-from ...utils.logging import get_logger
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

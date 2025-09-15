@@ -12,7 +12,7 @@ from enum import Enum
 from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
 
-from ...utils.logging import get_logger
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

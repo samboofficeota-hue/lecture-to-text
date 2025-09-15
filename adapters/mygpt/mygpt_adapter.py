@@ -8,8 +8,8 @@ import time
 from typing import Optional, Dict, Any, List, Tuple
 from openai import OpenAI
 
-from ...core.interfaces.rag_interface import RAGInterface, RAGConfig, KnowledgeItem
-from ...utils.logging import get_logger
+from core.interfaces.rag_interface import RAGInterface, RAGConfig, KnowledgeItem
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

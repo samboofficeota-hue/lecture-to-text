@@ -10,11 +10,11 @@ from pathlib import Path
 
 from faster_whisper import WhisperModel
 
-from ...core.interfaces.audio_processor import AudioProcessor
-from ...core.interfaces.transcriber import Transcriber, TranscriptionConfig
-from ...core.models.audio_data import AudioData
-from ...core.models.transcription_data import TranscriptionData, TranscriptionSegment
-from ...utils.logging import get_logger
+from core.interfaces.audio_processor import AudioProcessor
+from core.interfaces.transcriber import Transcriber, TranscriptionConfig
+from core.models.audio_data import AudioData
+from core.models.transcription_data import TranscriptionData, TranscriptionSegment
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
