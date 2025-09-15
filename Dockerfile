@@ -1,4 +1,4 @@
-# Cloud Run用Dockerfile
+# 新しいアーキテクチャ用Dockerfile
 FROM python:3.11-slim
 
 # システムパッケージの更新とFFmpegのインストール
@@ -16,10 +16,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# アプリケーションコードをコピー（不要なファイルを除外）
-COPY cloud_run_api.py .
-COPY text_enhancer.py .
-COPY config.py .
+# アプリケーションコードをコピー
+COPY . .
 
 # ポート8080を公開（Cloud Runのデフォルト）
 EXPOSE 8080
@@ -34,4 +32,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # アプリケーションの起動
-CMD ["python", "cloud_run_api.py"]
+CMD ["python", "scripts/cloud_run_api_new.py"]
