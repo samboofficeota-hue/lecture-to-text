@@ -1,0 +1,68 @@
+name: Deploy New Architecture to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/cloud_run_api_new.py'
+      - 'core/**'
+      - 'adapters/**'
+      - 'config/**'
+      - 'utils/**'
+      - 'learning/**'
+      - 'requirements.txt'
+      - 'Dockerfile.new'
+      - '.github/workflows/deploy-new-architecture.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: lecture-to-text-472009
+  SERVICE_NAME: lecture-to-text-api-v2
+  REGION: asia-northeast1
+  IMAGE_NAME: gcr.io/lecture-to-text-472009/lecture-to-text-api-v2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup Google Cloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Deploy New Architecture
+      run: |
+        echo "🚀 新しいアーキテクチャのCloud Runデプロイを開始します..."
+        
+        # プロジェクトIDを設定
+        echo "📝 プロジェクトIDを設定中..."
+        gcloud config set project ${{ env.PROJECT_ID }}
+        
+        # 新しいDockerfileを使用してイメージをビルド
+        echo "🔨 新しいアーキテクチャのDockerイメージをビルド中..."
+        gcloud builds submit --tag ${{ env.IMAGE_NAME }} --file Dockerfile.new .
+        
+        # 新しいCloud Runサービスにデプロイ
+        echo "☁️ 新しいCloud Runサービスにデプロイ中..."
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
+          --image ${{ env.IMAGE_NAME }} \
+          --platform managed \
+          --region ${{ env.REGION }} \
+          --allow-unauthenticated \
+          --memory 4Gi \
+          --cpu 2 \
+          --timeout 3600 \
+          --max-instances 10 \
+          --set-env-vars GCP_PROJECT_ID=${{ env.PROJECT_ID }}
+        
+        echo "✅ 新しいアーキテクチャのデプロイ完了！"
+        echo "🌐 サービスURL: https://${{ env.SERVICE_NAME }}-${{ env.REGION }}-${{ env.PROJECT_ID }}.a.run.app"

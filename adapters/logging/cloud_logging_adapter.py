@@ -13,7 +13,7 @@ from enum import Enum
 from google.cloud import logging as cloud_logging
 from google.cloud.logging.resource import Resource
 
-from ...utils.logging import get_logger
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

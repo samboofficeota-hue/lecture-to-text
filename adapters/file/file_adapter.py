@@ -9,10 +9,10 @@ import shutil
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 
-from ...core.interfaces.audio_processor import AudioProcessor
-from ...core.interfaces.pdf_processor import PDFProcessor, PDFProcessingConfig, PDFContent
-from ...core.models.audio_data import AudioData
-from ...utils.logging import get_logger
+from core.interfaces.audio_processor import AudioProcessor
+from core.interfaces.pdf_processor import PDFProcessor, PDFProcessingConfig, PDFContent
+from core.models.audio_data import AudioData
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

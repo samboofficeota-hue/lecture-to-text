@@ -6,16 +6,16 @@
 
 from .preset_manager import PresetManager
 from .domain_presets import (
-    AccountingFinancePreset,
-    TechnicalPreset,
-    EconomicsPreset,
-    BusinessPreset
+    DomainPreset,
+    DOMAIN_PRESETS,
+    get_domain_preset,
+    list_available_domains
 )
 
 __all__ = [
     'PresetManager',
-    'AccountingFinancePreset',
-    'TechnicalPreset',
-    'EconomicsPreset',
-    'BusinessPreset'
+    'DomainPreset',
+    'DOMAIN_PRESETS',
+    'get_domain_preset',
+    'list_available_domains'
 ]

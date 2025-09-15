@@ -15,7 +15,7 @@ from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1 import PublisherClient, SubscriberClient
 from google.cloud.pubsub_v1.subscriber.message import Message
 
-from ...utils.logging import get_logger
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

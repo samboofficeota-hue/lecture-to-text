@@ -1,12 +1,12 @@
 {
   "gcp": {
-    "project_id": "",
+    "project_id": "lecture-to-text-472009",
     "region": "asia-northeast1"
   },
   "cloudflare": {
     "api_token": "",
     "zone_id": "",
-    "domain": "allianceforum.org",
+    "domain": "sambo-office.com",
     "subdomain": "darwin"
   },
   "vercel": {

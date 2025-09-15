@@ -9,7 +9,7 @@ import sys
 from typing import Optional
 from pathlib import Path
 
-from ...config.settings import get_settings
+from config.settings import get_settings
 
 
 def setup_logging(

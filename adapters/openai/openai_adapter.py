@@ -9,11 +9,11 @@ from typing import Optional, Dict, Any, List, Tuple
 import openai
 from openai import OpenAI
 
-from ...core.interfaces.rag_interface import RAGInterface, RAGConfig, KnowledgeItem
-from ...core.interfaces.text_processor import TextProcessor, TextProcessingConfig
-from ...core.interfaces.output_generator import OutputGenerator, OutputConfig, OutputFormat
-from ...core.models.processing_result import ProcessingResult
-from ...utils.logging import get_logger
+from core.interfaces.rag_interface import RAGInterface, RAGConfig, KnowledgeItem
+from core.interfaces.text_processor import TextProcessor, TextProcessingConfig
+from core.interfaces.output_generator import OutputGenerator, OutputConfig, OutputFormat
+from core.models.processing_result import ProcessingResult
+from utils.logging import get_logger
 
 logger = get_logger(__name__)
 

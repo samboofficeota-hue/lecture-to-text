@@ -1,32 +1,32 @@
 {
   "environment_variables": {
     "GCP_PROJECT_ID": {
-      "status": "❌",
-      "message": "Google Cloud Project ID is not set"
+      "status": "✅",
+      "message": "Google Cloud Project ID is set"
     },
     "OPENAI_API_KEY": {
-      "status": "❌",
-      "message": "OpenAI API Key is not set"
+      "status": "✅",
+      "message": "OpenAI API Key is set"
     },
     "CLOUDFLARE_API_TOKEN": {
-      "status": "❌",
-      "message": "CloudFlare API Token is not set"
+      "status": "✅",
+      "message": "CloudFlare API Token is set"
     },
     "CLOUDFLARE_ZONE_ID": {
-      "status": "❌",
-      "message": "CloudFlare Zone ID is not set"
+      "status": "✅",
+      "message": "CloudFlare Zone ID is set"
     },
     "VERCEL_ORG_ID": {
-      "status": "❌",
-      "message": "Vercel Organization ID is not set"
+      "status": "✅",
+      "message": "Vercel Organization ID is set"
     },
     "VERCEL_PROJECT_ID": {
-      "status": "❌",
-      "message": "Vercel Project ID is not set"
+      "status": "✅",
+      "message": "Vercel Project ID is set"
     },
     "VERCEL_TOKEN": {
-      "status": "❌",
-      "message": "Vercel Token is not set"
+      "status": "✅",
+      "message": "Vercel Token is set"
     }
   },
   "file_structure": {
@@ -107,8 +107,8 @@
       "message": "Third-party library imported successfully"
     },
     "google.cloud": {
-      "status": "❌",
-      "message": "Google Cloud library import failed: No module named 'google.cloud'"
+      "status": "✅",
+      "message": "Google Cloud library imported successfully"
     },
     "openai": {
       "status": "✅",
