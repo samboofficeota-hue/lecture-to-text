@@ -24,7 +24,7 @@ pgvector>=0.2.0
 
 # Google Cloud
 google-cloud-storage>=2.10.0
-google-cloud-sql-connector>=1.4.0
+cloud-sql-python-connector[pg8000]>=1.4.0
 
 # メッセージング
 google-cloud-pubsub>=2.18.0
