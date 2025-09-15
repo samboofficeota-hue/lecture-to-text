@@ -11,7 +11,6 @@ from datetime import datetime
 from enum import Enum
 
 from google.cloud import logging as cloud_logging
-from google.cloud.logging.resource import Resource
 
 from utils.logging import get_logger
 
@@ -51,15 +50,8 @@ class CloudLoggingAdapter:
             # ログ名を設定
             log_name = self.config.get('log_name', 'darwin-app')
             
-            # リソースを設定
-            resource = Resource(
-                type=self.config.get('resource_type', 'cloud_run_revision'),
-                labels={
-                    'service_name': self.config.get('service_name', 'darwin'),
-                    'revision_name': self.config.get('version', '1.0.0'),
-                    'location': self.config.get('region', 'asia-northeast1')
-                }
-            )
+            # リソースを設定（簡易版）
+            resource = None
             
             # ロガーを作成
             self.logger = self.client.logger(log_name)
