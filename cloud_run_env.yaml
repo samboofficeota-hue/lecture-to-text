@@ -1,0 +1,18 @@
+# Cloud Run環境変数設定
+# このファイルはCloud Runデプロイ時に使用されます
+
+env_vars:
+  - name: PORT
+    value: "8080"
+  - name: PYTHONUNBUFFERED
+    value: "1"
+  - name: PYTHONPATH
+    value: "/app"
+  - name: GCP_PROJECT_ID
+    value: "lecture-to-text-472009"
+  - name: GCP_REGION
+    value: "asia-northeast1"
+  - name: LOG_LEVEL
+    value: "INFO"
+  - name: MAX_CONTENT_LENGTH
+    value: "104857600"  # 100MB
