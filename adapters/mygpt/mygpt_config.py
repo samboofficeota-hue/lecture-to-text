@@ -19,12 +19,14 @@ class MyGPTConfig:
     timeout: int = 30
     knowledge_base_id: Optional[str] = None
     custom_instructions: Optional[str] = None
+    mygpt_id: str = "g-68c7fe5c36b88191b0f242cc9c5c65aa"  # Darwin Lecture Assistant
     
     def __post_init__(self):
         """初期化後の処理"""
         if not self.api_key:
             import os
-            self.api_key = os.getenv("OPENAI_API_KEY", "")
+            # MYGPT_API_KEYが設定されていない場合はOPENAI_API_KEYを使用
+            self.api_key = os.getenv("MYGPT_API_KEY") or os.getenv("OPENAI_API_KEY", "")
     
     def to_dict(self) -> Dict[str, Any]:
         """辞書形式に変換"""
@@ -36,7 +38,8 @@ class MyGPTConfig:
             'max_tokens': self.max_tokens,
             'timeout': self.timeout,
             'knowledge_base_id': self.knowledge_base_id,
-            'custom_instructions': self.custom_instructions
+            'custom_instructions': self.custom_instructions,
+            'mygpt_id': self.mygpt_id
         }
     
     @classmethod
