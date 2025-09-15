@@ -31,7 +31,7 @@ class LectureRecord(Base):
     status = Column(String, nullable=False, default='uploaded')
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    metadata = Column(JSON)
+    lecture_metadata = Column(JSON)
     
     # ファイルパス
     audio_file_path = Column(String)
@@ -51,7 +51,7 @@ class KnowledgeItem(Base):
     content = Column(Text, nullable=False)
     domain = Column(String, nullable=False)
     embedding = Column(JSON)  # pgvector用
-    metadata = Column(JSON)
+    lecture_metadata = Column(JSON)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
