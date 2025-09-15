@@ -8,9 +8,9 @@ import re
 from typing import List, Dict, Any, Optional, Tuple
 from collections import Counter
 
-from .logging import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class TextUtils:
