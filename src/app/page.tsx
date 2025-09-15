@@ -100,9 +100,9 @@ export default function Home() {
       formData.append("audioFile", videoFile);
       formData.append("title", videoTitle.trim() || "講義音声");
 
-      // ローカル開発環境のAPI URL
-      const CLOUD_RUN_API_URL = "http://localhost:8081";
-      console.log("Local API upload:", CLOUD_RUN_API_URL);
+      // 本番環境のAPI URL
+      const CLOUD_RUN_API_URL = "https://lecture-to-text-api-1088729528504.asia-northeast1.run.app";
+      console.log("Production API upload:", CLOUD_RUN_API_URL);
       
       const response = await fetch(`${CLOUD_RUN_API_URL}/process-audio`, {
         method: "POST",
