@@ -83,6 +83,21 @@ processing_status = {
     "error": None
 }
 
+@app.route('/', methods=['GET'])
+def root():
+    """ルートパス"""
+    return jsonify({
+        "message": "Darwin Lecture Assistant API",
+        "version": "2.0.0",
+        "architecture": "new",
+        "status": "healthy",
+        "endpoints": {
+            "health": "/health",
+            "status": "/status",
+            "process_audio": "/process-audio"
+        }
+    })
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """ヘルスチェック"""
