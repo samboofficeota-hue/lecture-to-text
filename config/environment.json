@@ -1,0 +1,17 @@
+{
+  "gcp": {
+    "project_id": "",
+    "region": "asia-northeast1"
+  },
+  "cloudflare": {
+    "api_token": "",
+    "zone_id": "",
+    "domain": "allianceforum.org",
+    "subdomain": "darwin"
+  },
+  "vercel": {
+    "org_id": "",
+    "project_id": "",
+    "token": ""
+  }
+}
