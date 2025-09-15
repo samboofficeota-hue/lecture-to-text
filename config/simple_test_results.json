@@ -1,0 +1,136 @@
+{
+  "environment_variables": {
+    "GCP_PROJECT_ID": {
+      "status": "❌",
+      "message": "Google Cloud Project ID is not set"
+    },
+    "OPENAI_API_KEY": {
+      "status": "❌",
+      "message": "OpenAI API Key is not set"
+    },
+    "CLOUDFLARE_API_TOKEN": {
+      "status": "❌",
+      "message": "CloudFlare API Token is not set"
+    },
+    "CLOUDFLARE_ZONE_ID": {
+      "status": "❌",
+      "message": "CloudFlare Zone ID is not set"
+    },
+    "VERCEL_ORG_ID": {
+      "status": "❌",
+      "message": "Vercel Organization ID is not set"
+    },
+    "VERCEL_PROJECT_ID": {
+      "status": "❌",
+      "message": "Vercel Project ID is not set"
+    },
+    "VERCEL_TOKEN": {
+      "status": "❌",
+      "message": "Vercel Token is not set"
+    }
+  },
+  "file_structure": {
+    "core": {
+      "status": "✅",
+      "message": "Directory core exists"
+    },
+    "adapters": {
+      "status": "✅",
+      "message": "Directory adapters exists"
+    },
+    "config": {
+      "status": "✅",
+      "message": "Directory config exists"
+    },
+    "utils": {
+      "status": "✅",
+      "message": "Directory utils exists"
+    },
+    "learning": {
+      "status": "✅",
+      "message": "Directory learning exists"
+    },
+    "scripts": {
+      "status": "✅",
+      "message": "Directory scripts exists"
+    },
+    "docs": {
+      "status": "✅",
+      "message": "Directory docs exists"
+    }
+  },
+  "config_files": {
+    "config/environment.json": {
+      "status": "✅",
+      "message": "File config/environment.json exists"
+    },
+    "config/settings.py": {
+      "status": "✅",
+      "message": "File config/settings.py exists"
+    },
+    "env.example": {
+      "status": "✅",
+      "message": "File env.example exists"
+    },
+    "requirements.txt": {
+      "status": "✅",
+      "message": "File requirements.txt exists"
+    },
+    "Dockerfile": {
+      "status": "✅",
+      "message": "File Dockerfile exists"
+    },
+    ".github/workflows/deploy.yml": {
+      "status": "✅",
+      "message": "File .github/workflows/deploy.yml exists"
+    }
+  },
+  "python_imports": {
+    "os": {
+      "status": "✅",
+      "message": "Standard library imported successfully"
+    },
+    "json": {
+      "status": "✅",
+      "message": "Standard library imported successfully"
+    },
+    "pathlib": {
+      "status": "✅",
+      "message": "Standard library imported successfully"
+    },
+    "logging": {
+      "status": "✅",
+      "message": "Standard library imported successfully"
+    },
+    "requests": {
+      "status": "✅",
+      "message": "Third-party library imported successfully"
+    },
+    "google.cloud": {
+      "status": "❌",
+      "message": "Google Cloud library import failed: No module named 'google.cloud'"
+    },
+    "openai": {
+      "status": "✅",
+      "message": "OpenAI library imported successfully"
+    },
+    "faster_whisper": {
+      "status": "✅",
+      "message": "Whisper library imported successfully"
+    }
+  },
+  "scripts_executability": {
+    "scripts/setup_environment.py": {
+      "status": "✅",
+      "message": "Script scripts/setup_environment.py is executable"
+    },
+    "scripts/setup_cloudflare.py": {
+      "status": "✅",
+      "message": "Script scripts/setup_cloudflare.py is executable"
+    },
+    "scripts/test_connections.py": {
+      "status": "✅",
+      "message": "Script scripts/test_connections.py is executable"
+    }
+  }
+}
