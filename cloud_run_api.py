@@ -42,6 +42,16 @@ def too_large(e):
 # Whisperモデルの初期化（グローバル変数として）
 whisper_model = None
 
+# 処理状況を追跡するためのグローバル変数
+processing_status = {
+    "is_processing": False,
+    "current_step": "",
+    "progress": 0,
+    "total_steps": 0,
+    "start_time": None,
+    "error": None
+}
+
 def init_whisper():
     """Whisperモデルを初期化"""
     global whisper_model
@@ -113,6 +123,12 @@ def health_check():
     """ヘルスチェック"""
     return jsonify({"status": "healthy"})
 
+@app.route('/status', methods=['GET'])
+def get_processing_status():
+    """処理状況を取得"""
+    global processing_status
+    return jsonify(processing_status)
+
 def verify_api_key():
     """APIキーを検証"""
     api_key = request.headers.get('X-API-Key')
@@ -123,20 +139,42 @@ def verify_api_key():
 @app.route('/process-audio', methods=['POST'])
 def process_audio():
     """音声ファイル処理のメインエンドポイント"""
+    global processing_status
+    
     try:
+        # 既に処理中の場合はエラーを返す
+        if processing_status["is_processing"]:
+            return jsonify({"error": "既に処理が実行中です"}), 409
+        
+        # 処理状況をリセット
+        processing_status = {
+            "is_processing": True,
+            "current_step": "初期化中...",
+            "progress": 0,
+            "total_steps": 0,
+            "start_time": time.time(),
+            "error": None
+        }
+        
         # APIキー検証
         auth_error = verify_api_key()
         if auth_error:
+            processing_status["is_processing"] = False
+            processing_status["error"] = "Invalid API key"
             return auth_error
         
         # ファイルアップロードを取得
         if 'audioFile' not in request.files:
+            processing_status["is_processing"] = False
+            processing_status["error"] = "audioFile is required"
             return jsonify({"error": "audioFile is required"}), 400
         
         audio_file = request.files['audioFile']
         title = request.form.get('title', 'Untitled')
         
         if audio_file.filename == '':
+            processing_status["is_processing"] = False
+            processing_status["error"] = "No file selected"
             return jsonify({"error": "No file selected"}), 400
         
         # ファイルサイズをチェック
@@ -145,34 +183,58 @@ def process_audio():
         audio_file.seek(0)  # ファイルの先頭に戻す
         
         if file_size > 100 * 1024 * 1024:  # 100MB
+            processing_status["is_processing"] = False
+            processing_status["error"] = "File too large"
             return jsonify({"error": "File too large. Maximum size is 100MB"}), 413
         
-        print(f"音声処理開始: {title}")
-        print(f"ファイル名: {audio_file.filename}")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声処理開始: {title}")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ファイル名: {audio_file.filename}")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ファイルサイズ: {file_size / 1024 / 1024:.2f} MB")
         
         # Whisperモデルを初期化
+        processing_status["current_step"] = "Whisperモデル初期化中..."
+        processing_status["progress"] = 5
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Whisperモデル初期化中...")
         init_whisper()
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Whisperモデル初期化完了")
         
         # 一時ディレクトリを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             # 音声ファイルを保存
+            processing_status["current_step"] = "音声ファイル保存中..."
+            processing_status["progress"] = 10
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声ファイル保存中...")
             audio_path = os.path.join(temp_dir, "audio.mp3")
             audio_file.save(audio_path)
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声ファイル保存完了")
             
             # 音声の長さを取得
+            processing_status["current_step"] = "音声の長さを取得中..."
+            processing_status["progress"] = 15
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声の長さを取得中...")
             duration = get_audio_duration(audio_path)
-            print(f"音声の長さ: {duration:.1f}秒")
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声の長さ: {duration:.1f}秒")
             
             # セグメントに分割
+            processing_status["current_step"] = "音声をセグメントに分割中..."
+            processing_status["progress"] = 20
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声をセグメントに分割中...")
             segments = create_audio_segments(audio_path)
-            print(f"セグメント数: {len(segments)}")
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] セグメント数: {len(segments)}")
             
             # 各セグメントを処理
             all_transcripts = []
+            total_segments = len(segments)
+            processing_status["total_steps"] = total_segments + 2  # セグメント処理 + 文字起こし結合 + ChatGPT処理
+            
             for i, segment in enumerate(segments):
-                print(f"セグメント {i+1}/{len(segments)} 処理中...")
+                processing_status["current_step"] = f"セグメント {i+1}/{total_segments} 処理中..."
+                processing_status["progress"] = 25 + (i * 60 // total_segments)
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] セグメント {i+1}/{total_segments} 処理開始...")
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] セグメント時間: {segment['start']:.1f}s - {segment['end']:.1f}s")
                 
                 segment_audio_path = os.path.join(temp_dir, f"segment_{i}.wav")
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] セグメント音声抽出中...")
                 extract_audio_segment(
                     audio_path, 
                     segment['start'], 
@@ -180,19 +242,29 @@ def process_audio():
                     segment_audio_path
                 )
                 
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Whisper文字起こし実行中...")
                 transcript = transcribe_audio(segment_audio_path)
                 all_transcripts.append(transcript)
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] セグメント {i+1}/{total_segments} 完了")
             
             # 全セグメントの文字起こしを結合
+            processing_status["current_step"] = "文字起こし結果を結合中..."
+            processing_status["progress"] = 85
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 文字起こし結果を結合中...")
             first_draft = "\n\n".join(all_transcripts)
-            print("文字起こし完了")
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 文字起こし完了 (文字数: {len(first_draft)})")
             
             # ChatGPTでテキストを強化
-            print("ChatGPTでテキスト強化中...")
+            processing_status["current_step"] = "ChatGPTでテキスト強化中..."
+            processing_status["progress"] = 90
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ChatGPTでテキスト強化開始...")
             enhancer = TextEnhancer()
             enhanced_result = enhancer.process_full_pipeline(first_draft)
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ChatGPTテキスト強化完了")
             
             # 結果を返す
+            processing_status["current_step"] = "処理完了"
+            processing_status["progress"] = 100
             result = {
                 "title": title,
                 "audioFileName": audio_file.filename,
@@ -204,11 +276,26 @@ def process_audio():
                 "status": "completed"
             }
             
-            print("処理完了")
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 処理完了 - 結果を返送中")
+            
+            # 処理状況をリセット
+            processing_status["is_processing"] = False
+            processing_status["current_step"] = ""
+            processing_status["progress"] = 0
+            
             return jsonify(result)
             
     except Exception as e:
-        print(f"エラー: {str(e)}")
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] エラー: {str(e)}")
+        import traceback
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] スタックトレース: {traceback.format_exc()}")
+        
+        # エラー時に処理状況をリセット
+        processing_status["is_processing"] = False
+        processing_status["error"] = str(e)
+        processing_status["current_step"] = ""
+        processing_status["progress"] = 0
+        
         return jsonify({"error": f"処理中にエラーが発生しました: {str(e)}"}), 500
 
 if __name__ == '__main__':
