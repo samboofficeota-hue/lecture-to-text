@@ -101,7 +101,7 @@ export default function Home() {
       formData.append("title", videoTitle.trim() || "講義音声");
 
       // 本番環境のAPI URL
-      const CLOUD_RUN_API_URL = "https://lecture-to-text-api-1088729528504.asia-northeast1.run.app";
+      const CLOUD_RUN_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://darwin-lecture-api-1088729528504.asia-northeast1.run.app";
       console.log("Production API upload:", CLOUD_RUN_API_URL);
       
       const response = await fetch(`${CLOUD_RUN_API_URL}/process-audio`, {
