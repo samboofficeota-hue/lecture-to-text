@@ -102,14 +102,17 @@ export default function Home() {
 
       // 本番環境のAPI URL
       const CLOUD_RUN_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://darwin-lecture-api-1088729528504.asia-northeast1.run.app";
+      const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'test-api-key-12345';
+      
       console.log("Production API upload:", CLOUD_RUN_API_URL);
+      console.log("API Key:", API_KEY ? `${API_KEY.substring(0, 10)}...` : 'NOT SET');
       
       const response = await fetch(`${CLOUD_RUN_API_URL}/process-audio`, {
         method: "POST",
         body: formData,
         headers: {
           'User-Agent': 'Vercel-Client/1.0',
-          'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || 'test-api-key-12345'
+          'X-API-Key': API_KEY
         }
       });
 
