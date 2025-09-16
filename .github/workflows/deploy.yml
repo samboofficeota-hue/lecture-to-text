@@ -1,10 +1,12 @@
-name: Deploy Darwin Lecture-to-Text
+name: Deploy Darwin Lecture-to-Text (DEPRECATED)
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  # Disabled - using separate workflows
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main ]
+  workflow_dispatch:
 
 env:
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
