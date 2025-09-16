@@ -264,9 +264,9 @@ export default function Home() {
         </div>
 
         {/* プロセスステップ表示 */}
-        <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', padding: '1.5rem', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#111827', marginBottom: '1.5rem' }}>講義録生成プロセス</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">講義録生成プロセス</h2>
+          <div className="space-y-4">
             {processSteps.map((step) => (
               <div key={step.id} className="flex items-center space-x-4">
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
