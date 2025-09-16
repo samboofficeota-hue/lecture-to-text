@@ -36,7 +36,7 @@ CORS(app, origins=[
 ])
 
 # APIキー設定
-API_KEY = os.getenv('API_KEY', 'default-secret-key-change-this')
+API_KEY = os.getenv('NEXT_PUBLIC_API_KEY', 'default-secret-key-change-this')
 
 # ファイルアップロードサイズ制限を設定（100MB）
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB
