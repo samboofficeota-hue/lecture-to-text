@@ -26,6 +26,8 @@ app = Flask(__name__)
 
 # セキュリティ強化: 特定のOriginのみ許可
 CORS(app, origins=[
+    "https://darwin.sambo-office.com",  # 本番ドメイン
+    "https://lecture-to-text-7nbgp21xf-yoshis-projects-421cbceb.vercel.app",  # 現在のVercel URL
     "https://lecture-to-text-qov0p5jjn-yoshis-projects-421cbceb.vercel.app",
     "https://lecture-to-text.vercel.app",
     "https://lecture-to-text-omega.vercel.app",
