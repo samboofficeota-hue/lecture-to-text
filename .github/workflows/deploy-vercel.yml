@@ -1,14 +1,15 @@
 name: Deploy to Vercel
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'package.json'
-      - 'next.config.ts'
-      - 'vercel.json'
-      - '.github/workflows/deploy-vercel.yml'
+  # Temporarily disabled until GitHub Secrets are configured
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'src/**'
+  #     - 'package.json'
+  #     - 'next.config.ts'
+  #     - 'vercel.json'
+  #     - '.github/workflows/deploy-vercel.yml'
   workflow_dispatch:
 
 env:
