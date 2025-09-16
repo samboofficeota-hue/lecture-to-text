@@ -244,19 +244,27 @@ export default function Home() {
   }, [remainingTime, startTime]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%)', padding: '2rem' }}>
+      <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: 'bold', color: '#111827', marginBottom: '1rem' }}>
               講義音声から教材自動生成
             </h1>
-            <p className="text-xl text-gray-600">
+            <p style={{ fontSize: '1.25rem', color: '#4b5563' }}>
               MP3音声ファイルから、講義録や教材を自動で生成しましょう
             </p>
-          <div className="mt-6">
+          <div style={{ marginTop: '1.5rem' }}>
             <button
               onClick={() => setShowRecords(!showRecords)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              style={{ 
+                backgroundColor: '#4f46e5', 
+                color: 'white', 
+                fontWeight: '500', 
+                padding: '0.5rem 1.5rem', 
+                borderRadius: '0.5rem', 
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               {showRecords ? "新規作成に戻る" : "講義録一覧を見る"}
             </button>
@@ -264,9 +272,9 @@ export default function Home() {
         </div>
 
         {/* プロセスステップ表示 */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">講義録生成プロセス</h2>
-          <div className="space-y-4">
+        <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', padding: '1.5rem', marginBottom: '2rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#111827', marginBottom: '1.5rem' }}>講義録生成プロセス</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {processSteps.map((step) => (
               <div key={step.id} className="flex items-center space-x-4">
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
