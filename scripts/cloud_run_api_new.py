@@ -114,6 +114,10 @@ def get_processing_status():
 def verify_api_key():
     """APIキーを検証"""
     api_key = request.headers.get('X-API-Key')
+    print(f"Received API Key: {api_key}")
+    print(f"Expected API Key: {API_KEY}")
+    print(f"Environment NEXT_PUBLIC_API_KEY: {os.getenv('NEXT_PUBLIC_API_KEY')}")
+    
     if not api_key or api_key != API_KEY:
         return jsonify({"error": "Invalid API key"}), 401
     return None
