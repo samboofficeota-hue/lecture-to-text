@@ -63,3 +63,4 @@ OPENAI_API_KEY=your_openai_api_key
 - **バックエンド**: Google Cloud Run
 - **ストレージ**: Vercel Blob Storage
 # Test Cloud Run auto-deployment
+# Test commit for Vercel deploy
