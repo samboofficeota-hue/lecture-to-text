@@ -1,0 +1,17 @@
+{
+  "name": "lecture-to-text",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd src && npm run dev",
+    "build": "cd src && npm run build",
+    "start": "cd src && npm run start",
+    "lint": "cd src && npm run lint"
+  },
+  "workspaces": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
