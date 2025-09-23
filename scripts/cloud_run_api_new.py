@@ -25,15 +25,20 @@ from config.settings import get_settings
 app = Flask(__name__)
 
 # セキュリティ強化: 特定のOriginのみ許可
-CORS(app, origins=[
-    "https://darwin.sambo-office.com",  # 本番ドメイン
-    "https://lecture-to-text-7nbgp21xf-yoshis-projects-421cbceb.vercel.app",  # 現在のVercel URL
-    "https://lecture-to-text-qov0p5jjn-yoshis-projects-421cbceb.vercel.app",
-    "https://lecture-to-text.vercel.app",
-    "https://lecture-to-text-omega.vercel.app",
-    "https://lecture-to-text-7xtgo3bbl-yoshis-projects-421cbceb.vercel.app",
-    "http://localhost:3000"  # 開発用
-])
+CORS(app, 
+     origins=[
+         "https://darwin.sambo-office.com",  # 本番ドメイン
+         "https://lecture-to-text-7nbgp21xf-yoshis-projects-421cbceb.vercel.app",  # 現在のVercel URL
+         "https://lecture-to-text-qov0p5jjn-yoshis-projects-421cbceb.vercel.app",
+         "https://lecture-to-text.vercel.app",
+         "https://lecture-to-text-omega.vercel.app",
+         "https://lecture-to-text-7xtgo3bbl-yoshis-projects-421cbceb.vercel.app",
+         "http://localhost:3000"  # 開発用
+     ],
+     allow_headers=["Content-Type", "X-API-Key", "Authorization"],
+     allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+     supports_credentials=True
+)
 
 # APIキー設定
 API_KEY = os.getenv('NEXT_PUBLIC_API_KEY', 'default-secret-key-change-this')
