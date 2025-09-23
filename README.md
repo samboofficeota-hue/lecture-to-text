@@ -65,3 +65,4 @@ OPENAI_API_KEY=your_openai_api_key
 # Test Cloud Run auto-deployment
 # Test commit for Vercel deploy
 # Force Vercel redeploy after cleanup 2025年 9月16日 火曜日 18時22分38秒 JST
+# 自動デプロイテスト用の変更
