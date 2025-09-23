@@ -49,7 +49,7 @@ jobs:
         
         # 新しいDockerfileを使用してイメージをビルド
         echo "🔨 新しいアーキテクチャのDockerイメージをビルド中..."
-        gcloud builds submit --tag ${{ env.IMAGE_NAME }} --file Dockerfile .
+        gcloud builds submit --tag ${{ env.IMAGE_NAME }} .
         
         # 新しいCloud Runサービスにデプロイ
         echo "☁️ 新しいCloud Runサービスにデプロイ中..."
