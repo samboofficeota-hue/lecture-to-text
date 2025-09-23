@@ -46,6 +46,16 @@ class OpenAIConfig:
     temperature: float = 0.3
     max_tokens: int = 4000
     timeout: int = 30
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            'api_key': self.api_key,
+            'model': self.model,
+            'temperature': self.temperature,
+            'max_tokens': self.max_tokens,
+            'timeout': self.timeout
+        }
 
 
 @dataclass
@@ -56,6 +66,16 @@ class RAGConfig:
     knowledge_base_path: Optional[str] = None
     confidence_threshold: float = 0.8
     max_context_length: int = 4000
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            'use_mygpt': self.use_mygpt,
+            'use_chatgpt': self.use_chatgpt,
+            'knowledge_base_path': self.knowledge_base_path,
+            'confidence_threshold': self.confidence_threshold,
+            'max_context_length': self.max_context_length
+        }
 
 
 @dataclass
@@ -66,6 +86,16 @@ class StorageConfig:
     backup_dir: str = "./backup"
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     allowed_formats: List[str] = field(default_factory=lambda: [".mp3", ".wav", ".mp4", ".m4a", ".pdf"])
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            'output_dir': self.output_dir,
+            'temp_dir': self.temp_dir,
+            'backup_dir': self.backup_dir,
+            'max_file_size': self.max_file_size,
+            'allowed_formats': self.allowed_formats
+        }
 
 
 @dataclass
@@ -76,6 +106,16 @@ class LoggingConfig:
     file_path: Optional[str] = None
     max_file_size: int = 10 * 1024 * 1024  # 10MB
     backup_count: int = 5
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            'level': self.level,
+            'format': self.format,
+            'file_path': self.file_path,
+            'max_file_size': self.max_file_size,
+            'backup_count': self.backup_count
+        }
 
 
 @dataclass
