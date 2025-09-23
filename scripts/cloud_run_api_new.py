@@ -90,9 +90,8 @@ processing_status = {
 
 def add_cors_headers(response):
     """レスポンスにCORSヘッダーを追加"""
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'X-API-Key, Content-Type')
-    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS, GET')
+    # flask-corsが既にCORSヘッダーを設定しているので、追加の設定は不要
+    # 必要に応じて追加のヘッダーを設定
     return response
 
 @app.route('/', methods=['GET'])
@@ -136,15 +135,7 @@ def verify_api_key():
         return add_cors_headers(response), 401
     return None
 
-@app.route('/process-audio', methods=['OPTIONS'])
-def process_audio_options():
-    """CORSプリフライトリクエストのハンドラー"""
-    response = jsonify({})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'X-API-Key, Content-Type')
-    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    response.headers.add('Access-Control-Max-Age', '86400')  # 24時間
-    return response
+# OPTIONSハンドラーは不要（flask-corsが自動処理）
 
 @app.route('/process-audio', methods=['POST'])
 def process_audio():
