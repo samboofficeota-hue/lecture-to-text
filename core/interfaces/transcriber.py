@@ -23,12 +23,25 @@ class TranscriptionConfig:
     best_of: int = 5
     temperature: List[float] = None
     vad_filter: bool = True
+    vad_parameters: Optional[Dict[str, Any]] = None
     word_timestamps: bool = True
+    condition_on_previous_text: bool = True
     initial_prompt: Optional[str] = None
+    compression_ratio_threshold: float = 2.4
+    log_prob_threshold: float = -1.0
+    no_speech_threshold: float = 0.6
     
     def __post_init__(self):
         if self.temperature is None:
             self.temperature = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        
+        if self.vad_parameters is None:
+            self.vad_parameters = {
+                'min_silence_duration_ms': 500,
+                'speech_pad_ms': 400,
+                'min_speech_duration_ms': 250,
+                'max_speech_duration_s': 30.0
+            }
 
 
 class Transcriber(ABC):
