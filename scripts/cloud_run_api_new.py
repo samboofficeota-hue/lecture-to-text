@@ -71,10 +71,12 @@ def init_services():
         
         # 講義処理サービスを初期化
         lecture_service = LectureProcessingService(
-            whisper_adapter=whisper_adapter,
-            openai_adapter=openai_adapter,
-            file_adapter=file_adapter,
-            mygpt_adapter=mygpt_adapter
+            audio_processor=whisper_adapter,
+            transcriber=whisper_adapter,
+            text_processor=openai_adapter,
+            output_generator=openai_adapter,
+            rag_interface=mygpt_adapter,
+            pdf_processor=file_adapter
         )
         
         print("新しいアーキテクチャのサービス初期化完了")
