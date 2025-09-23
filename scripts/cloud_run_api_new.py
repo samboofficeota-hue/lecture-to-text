@@ -246,10 +246,10 @@ def process_audio():
                 "title": title,
                 "audioFileName": audio_file.filename,
                 "audioDuration": result.audio_duration,
-                "segmentCount": len(result.transcription.segments),
-                "firstDraft": result.transcription.text,
-                "transcript": result.enhanced_text,
-                "technicalTerms": result.technical_terms,
+                "segmentCount": len(result.transcription.segments) if result.transcription else 0,
+                "firstDraft": result.transcription.text if result.transcription else "",
+                "transcript": result.enhanced_text or result.processed_text,
+                "technicalTerms": result.technical_terms or [],
                 "status": "completed",
                 "architecture": "new"
             }
