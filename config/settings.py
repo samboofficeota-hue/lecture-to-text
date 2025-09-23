@@ -119,10 +119,31 @@ class LoggingConfig:
 
 
 @dataclass
+class MyGPTConfig:
+    """MyGPT設定"""
+    api_key: str = ""
+    model: str = "gpt-4"
+    temperature: float = 0.3
+    max_tokens: int = 4000
+    timeout: int = 30
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            'api_key': self.api_key,
+            'model': self.model,
+            'temperature': self.temperature,
+            'max_tokens': self.max_tokens,
+            'timeout': self.timeout
+        }
+
+
+@dataclass
 class Settings:
     """全体設定"""
     whisper: WhisperConfig = field(default_factory=WhisperConfig)
     openai: OpenAIConfig = field(default_factory=OpenAIConfig)
+    mygpt: MyGPTConfig = field(default_factory=MyGPTConfig)
     rag: RAGConfig = field(default_factory=RAGConfig)
     storage: StorageConfig = field(default_factory=StorageConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
@@ -149,6 +170,12 @@ class Settings:
         self.openai.model = os.getenv("OPENAI_MODEL", self.openai.model)
         self.openai.temperature = float(os.getenv("OPENAI_TEMPERATURE", str(self.openai.temperature)))
         self.openai.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", str(self.openai.max_tokens)))
+        
+        # MyGPT設定
+        self.mygpt.api_key = os.getenv("MYGPT_API_KEY", self.mygpt.api_key)
+        self.mygpt.model = os.getenv("MYGPT_MODEL", self.mygpt.model)
+        self.mygpt.temperature = float(os.getenv("MYGPT_TEMPERATURE", str(self.mygpt.temperature)))
+        self.mygpt.max_tokens = int(os.getenv("MYGPT_MAX_TOKENS", str(self.mygpt.max_tokens)))
         
         # RAG設定
         self.rag.use_mygpt = os.getenv("RAG_USE_MYGPT", "true").lower() == "true"
