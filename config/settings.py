@@ -201,3 +201,5 @@ def reload_settings():
     """設定を再読み込み"""
     global _settings
     _settings = Settings()
+
+# 自動デプロイテスト用のコメント
