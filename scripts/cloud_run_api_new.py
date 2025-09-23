@@ -22,6 +22,12 @@ from adapters.file.file_adapter import FileAdapter
 from adapters.mygpt.mygpt_adapter import MyGPTAdapter
 from config.settings import get_settings
 
+# ストリーミング処理のインポート
+from utils.streaming_audio_processor import StreamingAudioProcessor, create_streaming_processor
+from utils.cloud_audio_manager import CloudAudioManager
+from utils.audio_utils import get_audio_metadata
+import psutil
+
 app = Flask(__name__)
 
 # セキュリティ強化: 特定のOriginのみ許可
@@ -45,6 +51,143 @@ API_KEY = os.getenv('NEXT_PUBLIC_API_KEY', 'default-secret-key-change-this')
 
 # ファイルアップロードサイズ制限を設定（100MB）
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB
+
+# ストリーミング処理の設定
+MAX_MEMORY_MB = int(os.getenv('MAX_MEMORY_MB', '6144'))  # 6GB
+CHUNK_DURATION = int(os.getenv('CHUNK_DURATION', '300'))  # 5分
+ENABLE_STREAMING = os.getenv('ENABLE_STREAMING', 'true').lower() == 'true'
+GCS_BUCKET_NAME = os.getenv('GCS_BUCKET_NAME', 'lecture-to-text-audio-chunks')
+
+def get_memory_usage():
+    """現在のメモリ使用量を取得（MB）"""
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / (1024 * 1024)
+
+def log_memory_usage(step_name):
+    """メモリ使用量をログに出力"""
+    memory_mb = get_memory_usage()
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {step_name} - メモリ使用量: {memory_mb:.2f}MB / {MAX_MEMORY_MB}MB")
+    if memory_mb > MAX_MEMORY_MB * 0.8:  # 80%を超えたら警告
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 警告: メモリ使用量が制限の80%を超えています")
+
+def process_with_streaming(audio_path, title, temp_dir):
+    """ストリーミング処理で音声ファイルを処理"""
+    global processing_status
+    
+    try:
+        # 音声ファイルのメタデータを取得
+        audio_metadata = get_audio_metadata(audio_path)
+        duration = audio_metadata['duration']
+        
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ストリーミング処理開始: {duration:.2f}秒の音声を{CHUNK_DURATION}秒のチャンクに分割")
+        log_memory_usage("ストリーミング処理開始")
+        
+        # ストリーミングプロセッサを作成
+        with create_streaming_processor(
+            file_duration=duration,
+            max_memory_mb=MAX_MEMORY_MB,
+            chunk_duration_sec=CHUNK_DURATION,
+            temp_dir=temp_dir
+        ) as processor:
+            
+            # Cloud Audio Managerを初期化
+            cloud_manager = CloudAudioManager(GCS_BUCKET_NAME)
+            
+            # 音声セッションを作成
+            session_id = cloud_manager.create_audio_session(
+                original_filename=os.path.basename(audio_path),
+                duration=duration,
+                metadata=audio_metadata
+            )
+            
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声セッション作成: {session_id}")
+            
+            # 音声をチャンクに分割して処理
+            all_transcripts = []
+            all_technical_terms = []
+            
+            chunk_count = 0
+            total_chunks = int(duration / CHUNK_DURATION) + 1
+            
+            for chunk_info in processor.split_audio_file(audio_path):
+                chunk_count += 1
+                processing_status["current_step"] = f"チャンク処理中... ({chunk_count}/{total_chunks})"
+                processing_status["progress"] = 20 + (chunk_count / total_chunks) * 60
+                
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] チャンク {chunk_count}/{total_chunks} 処理中: {chunk_info['duration']:.2f}秒")
+                log_memory_usage(f"チャンク{chunk_count}処理開始")
+                
+                # チャンクをCloud Storageにアップロード
+                cloud_manager.upload_chunk(
+                    session_id=session_id,
+                    chunk_index=chunk_info['chunk_index'],
+                    chunk_path=chunk_info['chunk_path'],
+                    start_time=chunk_info['start_time'],
+                    end_time=chunk_info['end_time']
+                )
+                
+                # チャンクを処理
+                chunk_result = lecture_service.process_lecture(
+                    audio_file_path=chunk_info['chunk_path'],
+                    title=f"{title} (チャンク {chunk_count})",
+                    domain="general"
+                )
+                
+                # 結果を蓄積
+                if chunk_result.transcription and chunk_result.transcription.text:
+                    all_transcripts.append(chunk_result.transcription.text)
+                
+                if chunk_result.technical_terms:
+                    all_technical_terms.extend(chunk_result.technical_terms)
+                
+                log_memory_usage(f"チャンク{chunk_count}処理完了")
+                
+                # チャンクファイルを削除してメモリを解放
+                try:
+                    os.remove(chunk_info['chunk_path'])
+                except:
+                    pass
+            
+            # 結果をマージ
+            processing_status["current_step"] = "結果マージ中..."
+            processing_status["progress"] = 85
+            log_memory_usage("結果マージ開始")
+            
+            merged_transcript = "\n\n".join(all_transcripts)
+            unique_technical_terms = list(set(all_technical_terms))
+            
+            # 結果オブジェクトを作成
+            from core.models.lecture_result import LectureResult
+            from core.models.transcription import Transcription
+            
+            merged_transcription = Transcription(
+                text=merged_transcript,
+                segments=[]  # チャンク処理ではセグメント情報は保持しない
+            )
+            
+            result = LectureResult(
+                title=title,
+                audio_duration=duration,
+                transcription=merged_transcription,
+                processed_text=merged_transcript,
+                enhanced_text=merged_transcript,
+                technical_terms=unique_technical_terms,
+                summary="",
+                key_points=[],
+                questions=[],
+                created_at=None
+            )
+            
+            log_memory_usage("結果マージ完了")
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ストリーミング処理完了: {len(all_transcripts)}チャンク処理")
+            
+            return result
+            
+    except Exception as e:
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ストリーミング処理エラー: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 @app.errorhandler(413)
 def too_large(e):
@@ -247,22 +390,34 @@ def process_audio():
             # 音声ファイルを保存
             processing_status["current_step"] = "音声ファイル保存中..."
             processing_status["progress"] = 10
+            log_memory_usage("音声ファイル保存開始")
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声ファイル保存中...")
             audio_path = os.path.join(temp_dir, "audio.mp3")
             audio_file.save(audio_path)
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声ファイル保存完了")
+            log_memory_usage("音声ファイル保存完了")
             
-            # 新しいアーキテクチャで講義処理を実行
-            processing_status["current_step"] = "講義処理実行中..."
-            processing_status["progress"] = 20
-            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 講義処理実行中...")
+            # 音声ファイルのメタデータを取得
+            audio_metadata = get_audio_metadata(audio_path)
+            duration = audio_metadata['duration']
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 音声ファイル情報: 長さ={duration:.2f}秒, サイズ={audio_metadata['file_size']/1024/1024:.2f}MB")
             
-            # 講義処理サービスを使用
-            result = lecture_service.process_lecture(
-                audio_file_path=audio_path,
-                title=title,
-                domain="general"
-            )
+            # ストリーミング処理を使用するかどうかを判定
+            if ENABLE_STREAMING and duration > CHUNK_DURATION:
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ストリーミング処理を開始 (長さ: {duration:.2f}秒 > {CHUNK_DURATION}秒)")
+                result = process_with_streaming(audio_path, title, temp_dir)
+            else:
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 通常処理を開始 (長さ: {duration:.2f}秒 <= {CHUNK_DURATION}秒)")
+                # 通常の講義処理サービスを使用
+                processing_status["current_step"] = "講義処理実行中..."
+                processing_status["progress"] = 20
+                log_memory_usage("講義処理開始")
+                result = lecture_service.process_lecture(
+                    audio_file_path=audio_path,
+                    title=title,
+                    domain="general"
+                )
+                log_memory_usage("講義処理完了")
             
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 講義処理完了")
             
