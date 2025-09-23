@@ -26,7 +26,7 @@ export default function Home() {
 
     try {
       const formData = new FormData();
-      formData.append('audio_file', videoFile);
+      formData.append('audioFile', videoFile);
       formData.append('title', videoTitle || '講義音声');
 
       const CLOUD_RUN_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://darwin-lecture-api-1088729528504.asia-northeast1.run.app";

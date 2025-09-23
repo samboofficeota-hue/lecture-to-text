@@ -45,10 +45,7 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB
 def too_large(e):
     """ファイルサイズが大きすぎる場合のエラーハンドラー"""
     response = jsonify({"error": "File too large. Maximum size is 100MB"})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    return response, 413
+    return add_cors_headers(response), 413
 
 # 新しいアーキテクチャのサービス初期化
 lecture_service = None
@@ -91,10 +88,17 @@ processing_status = {
     "error": None
 }
 
+def add_cors_headers(response):
+    """レスポンスにCORSヘッダーを追加"""
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'X-API-Key, Content-Type')
+    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS, GET')
+    return response
+
 @app.route('/', methods=['GET'])
 def root():
     """ルートパス"""
-    return jsonify({
+    response = jsonify({
         "message": "Darwin Lecture Assistant API",
         "version": "2.0.0",
         "architecture": "new",
@@ -105,17 +109,20 @@ def root():
             "process_audio": "/process-audio"
         }
     })
+    return add_cors_headers(response)
 
 @app.route('/health', methods=['GET'])
 def health_check():
     """ヘルスチェック"""
-    return jsonify({"status": "healthy", "architecture": "new"})
+    response = jsonify({"status": "healthy", "architecture": "new"})
+    return add_cors_headers(response)
 
 @app.route('/status', methods=['GET'])
 def get_processing_status():
     """処理状況を取得"""
     global processing_status
-    return jsonify(processing_status)
+    response = jsonify(processing_status)
+    return add_cors_headers(response)
 
 def verify_api_key():
     """APIキーを検証"""
@@ -126,11 +133,18 @@ def verify_api_key():
     
     if not api_key or api_key != API_KEY:
         response = jsonify({"error": "Invalid API key"})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        return response, 401
+        return add_cors_headers(response), 401
     return None
+
+@app.route('/process-audio', methods=['OPTIONS'])
+def process_audio_options():
+    """CORSプリフライトリクエストのハンドラー"""
+    response = jsonify({})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'X-API-Key, Content-Type')
+    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    response.headers.add('Access-Control-Max-Age', '86400')  # 24時間
+    return response
 
 @app.route('/process-audio', methods=['POST'])
 def process_audio():
@@ -141,10 +155,7 @@ def process_audio():
         # 既に処理中の場合はエラーを返す
         if processing_status["is_processing"]:
             response = jsonify({"error": "既に処理が実行中です"})
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-            response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            return response, 409
+            return add_cors_headers(response), 409
         
         # 処理状況をリセット
         processing_status = {
@@ -162,20 +173,14 @@ def process_audio():
             processing_status["is_processing"] = False
             processing_status["error"] = "Invalid API key"
             response = jsonify({"error": "Invalid API key"})
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-            response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            return response, 401
+            return add_cors_headers(response), 401
         
         # ファイルアップロードを取得
         if 'audioFile' not in request.files:
             processing_status["is_processing"] = False
             processing_status["error"] = "audioFile is required"
             response = jsonify({"error": "audioFile is required"})
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-            response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            return response, 400
+            return add_cors_headers(response), 400
         
         audio_file = request.files['audioFile']
         title = request.form.get('title', 'Untitled')
@@ -184,10 +189,7 @@ def process_audio():
             processing_status["is_processing"] = False
             processing_status["error"] = "No file selected"
             response = jsonify({"error": "No file selected"})
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-            response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            return response, 400
+            return add_cors_headers(response), 400
         
         # ファイルサイズをチェック
         audio_file.seek(0, 2)  # ファイルの末尾に移動
@@ -198,10 +200,7 @@ def process_audio():
             processing_status["is_processing"] = False
             processing_status["error"] = "File too large"
             response = jsonify({"error": "File too large. Maximum size is 100MB"})
-            response.headers.add('Access-Control-Allow-Origin', '*')
-            response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-            response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            return response, 413
+            return add_cors_headers(response), 413
         
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 新しいアーキテクチャで音声処理開始: {title}")
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] ファイル名: {audio_file.filename}")
@@ -262,10 +261,7 @@ def process_audio():
             processing_status["progress"] = 0
             
             response_obj = jsonify(response)
-            response_obj.headers.add('Access-Control-Allow-Origin', '*')
-            response_obj.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-            response_obj.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-            return response_obj
+            return add_cors_headers(response_obj)
             
     except Exception as e:
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] エラー: {str(e)}")
@@ -279,10 +275,7 @@ def process_audio():
         processing_status["progress"] = 0
         
         response = jsonify({"error": f"処理中にエラーが発生しました: {str(e)}"})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'X-API-Key')
-        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        return response, 500
+        return add_cors_headers(response), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
