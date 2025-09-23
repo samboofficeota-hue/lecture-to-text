@@ -30,6 +30,10 @@ class ProcessingResult:
     created_at: datetime = None
     updated_at: datetime = None
     metadata: Dict[str, Any] = None
+    # 追加属性
+    audio_duration: float = 0.0
+    transcription: Optional[Any] = None
+    technical_terms: List[str] = None
     
     def __post_init__(self):
         """初期化後の処理"""
@@ -39,6 +43,8 @@ class ProcessingResult:
             self.updated_at = datetime.now()
         if self.metadata is None:
             self.metadata = {}
+        if self.technical_terms is None:
+            self.technical_terms = []
     
     @property
     def word_count(self) -> int:
@@ -104,7 +110,10 @@ class ProcessingResult:
             'processing_time': self.processing_time,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
-            'metadata': self.metadata
+            'metadata': self.metadata,
+            'audio_duration': self.audio_duration,
+            'transcription': self.transcription.to_dict() if self.transcription else None,
+            'technical_terms': self.technical_terms
         }
     
     @classmethod
@@ -118,5 +127,8 @@ class ProcessingResult:
             processing_time=data['processing_time'],
             created_at=datetime.fromisoformat(data['created_at']),
             updated_at=datetime.fromisoformat(data['updated_at']),
-            metadata=data.get('metadata', {})
+            metadata=data.get('metadata', {}),
+            audio_duration=data.get('audio_duration', 0.0),
+            transcription=data.get('transcription'),
+            technical_terms=data.get('technical_terms', [])
         )

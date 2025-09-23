@@ -93,6 +93,11 @@ class LectureRecord:
     updated_at: datetime = None
     processing_log: List[Dict[str, Any]] = None
     custom_metadata: Dict[str, Any] = None
+    # 追加属性
+    audio_duration: float = 0.0
+    transcription: Optional[Any] = None
+    enhanced_text: Optional[str] = None
+    technical_terms: List[str] = None
     
     def __post_init__(self):
         """初期化後の処理"""
@@ -104,6 +109,8 @@ class LectureRecord:
             self.processing_log = []
         if self.custom_metadata is None:
             self.custom_metadata = {}
+        if self.technical_terms is None:
+            self.technical_terms = []
     
     @property
     def audio_file_exists(self) -> bool:

@@ -93,6 +93,11 @@ class TranscriptionData:
         """セグメント数を取得"""
         return len(self.segments)
     
+    @property
+    def text(self) -> str:
+        """テキストを取得（full_textのエイリアス）"""
+        return self.full_text
+    
     def get_segments_by_time_range(
         self, 
         start_time: float, 
