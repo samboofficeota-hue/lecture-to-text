@@ -52,6 +52,24 @@ def too_large(e):
     response = jsonify({"error": "File too large. Maximum size is 100MB"})
     return add_cors_headers(response), 413
 
+@app.errorhandler(503)
+def service_unavailable(e):
+    """サービス利用不可エラーハンドラー"""
+    response = jsonify({"error": "Service temporarily unavailable. Please try again later."})
+    return add_cors_headers(response), 503
+
+@app.errorhandler(500)
+def internal_error(e):
+    """内部サーバーエラーハンドラー"""
+    response = jsonify({"error": "Internal server error. Please try again later."})
+    return add_cors_headers(response), 500
+
+@app.errorhandler(404)
+def not_found(e):
+    """404エラーハンドラー"""
+    response = jsonify({"error": "Endpoint not found"})
+    return add_cors_headers(response), 404
+
 # 新しいアーキテクチャのサービス初期化
 lecture_service = None
 
@@ -60,28 +78,43 @@ def init_services():
     global lecture_service
     
     if lecture_service is None:
-        print("新しいアーキテクチャのサービスを初期化中...")
-        
-        # 設定を取得
-        settings = get_settings()
-        
-        # アダプターを初期化
-        whisper_adapter = WhisperAdapter(settings.whisper.to_dict())
-        openai_adapter = OpenAIAdapter(settings.openai.to_dict())
-        file_adapter = FileAdapter()
-        mygpt_adapter = MyGPTAdapter(settings.mygpt.to_dict())
-        
-        # 講義処理サービスを初期化
-        lecture_service = LectureProcessingService(
-            audio_processor=whisper_adapter,
-            transcriber=whisper_adapter,
-            text_processor=openai_adapter,
-            output_generator=openai_adapter,
-            rag_interface=mygpt_adapter,
-            pdf_processor=file_adapter
-        )
-        
-        print("新しいアーキテクチャのサービス初期化完了")
+        try:
+            print("新しいアーキテクチャのサービスを初期化中...")
+            
+            # 設定を取得
+            settings = get_settings()
+            print(f"設定取得完了: {settings}")
+            
+            # アダプターを初期化
+            print("Whisperアダプターを初期化中...")
+            whisper_adapter = WhisperAdapter(settings.whisper.to_dict())
+            
+            print("OpenAIアダプターを初期化中...")
+            openai_adapter = OpenAIAdapter(settings.openai.to_dict())
+            
+            print("Fileアダプターを初期化中...")
+            file_adapter = FileAdapter()
+            
+            print("MyGPTアダプターを初期化中...")
+            mygpt_adapter = MyGPTAdapter(settings.mygpt.to_dict())
+            
+            # 講義処理サービスを初期化
+            print("講義処理サービスを初期化中...")
+            lecture_service = LectureProcessingService(
+                audio_processor=whisper_adapter,
+                transcriber=whisper_adapter,
+                text_processor=openai_adapter,
+                output_generator=openai_adapter,
+                rag_interface=mygpt_adapter,
+                pdf_processor=file_adapter
+            )
+            
+            print("新しいアーキテクチャのサービス初期化完了")
+        except Exception as e:
+            print(f"サービス初期化エラー: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
 
 # 処理状況を追跡するためのグローバル変数
 processing_status = {
