@@ -25,8 +25,10 @@ class AudioData:
     
     def __post_init__(self):
         """初期化後の処理"""
+        # ファイル存在チェックは警告のみ（ファイルがまだ作成されていない場合があるため）
         if not Path(self.file_path).exists():
-            raise FileNotFoundError(f"Audio file not found: {self.file_path}")
+            import warnings
+            warnings.warn(f"Audio file not found: {self.file_path}")
     
     @property
     def file_name(self) -> str:

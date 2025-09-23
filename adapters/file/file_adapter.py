@@ -13,6 +13,7 @@ from core.interfaces.audio_processor import AudioProcessor
 from core.interfaces.pdf_processor import PDFProcessor, PDFProcessingConfig, PDFContent
 from core.models.audio_data import AudioData
 from utils.logging import get_logger
+from utils.audio_utils import get_audio_metadata, validate_audio_file
 
 logger = get_logger(__name__)
 
@@ -51,7 +52,15 @@ class FileAdapter(AudioProcessor, PDFProcessor):
             AudioData: 抽出された音声データ
         """
         try:
+            # 入力ファイルの妥当性をチェック
+            is_valid, error_msg = validate_audio_file(input_path)
+            if not is_valid:
+                raise ValueError(f"Invalid input audio file: {error_msg}")
+            
             import ffmpeg
+            
+            # 出力ディレクトリを作成
+            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
             
             # FFmpegを使用して音声を抽出
             (
@@ -69,20 +78,23 @@ class FileAdapter(AudioProcessor, PDFProcessor):
                 .run(quiet=True, overwrite_output=True)
             )
             
+            # 出力ファイルのメタデータを取得
+            output_metadata = get_audio_metadata(output_path)
+            
             # 音声データを作成
             audio_data = AudioData(
                 file_path=output_path,
-                file_size=Path(output_path).stat().st_size,
-                duration=0.0,  # 後で更新
-                sample_rate=sample_rate,
-                channels=channels,
-                bit_depth=16,
-                format='wav',
+                file_size=output_metadata['file_size'],
+                duration=output_metadata['duration'],
+                sample_rate=output_metadata['sample_rate'],
+                channels=output_metadata['channels'],
+                bit_depth=output_metadata['bit_depth'],
+                format=output_metadata['format'],
                 created_at=None,
-                metadata={}
+                metadata=output_metadata['raw_metadata']
             )
             
-            logger.info(f"Audio extracted: {input_path} -> {output_path}")
+            logger.info(f"Audio extracted: {input_path} -> {output_path} (duration: {audio_data.duration:.2f}s)")
             return audio_data
             
         except Exception as e:
