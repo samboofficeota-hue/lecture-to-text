@@ -22,6 +22,20 @@ class WhisperConfig:
     temperature: List[float] = field(default_factory=lambda: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
     vad_filter: bool = True
     word_timestamps: bool = True
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """辞書形式に変換"""
+        return {
+            'model_size': self.model,
+            'device': self.device,
+            'compute_type': self.compute_type,
+            'language': self.language,
+            'beam_size': self.beam_size,
+            'best_of': self.best_of,
+            'temperature': self.temperature,
+            'vad_filter': self.vad_filter,
+            'word_timestamps': self.word_timestamps
+        }
 
 
 @dataclass
