@@ -62,7 +62,7 @@ jobs:
           --cpu 2 \
           --timeout 3600 \
           --max-instances 10 \
-          --set-env-vars GCP_PROJECT_ID=${{ env.PROJECT_ID }},NEXT_PUBLIC_API_KEY=test-api-key-12345
+          --set-env-vars GCP_PROJECT_ID=${{ env.PROJECT_ID }},NEXT_PUBLIC_API_KEY=test-api-key-12345,OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},MYGPT_API_KEY=${{ secrets.OPENAI_API_KEY }},WHISPER_MODEL=large-v3,WHISPER_DEVICE=auto,WHISPER_COMPUTE_TYPE=auto,RAG_USE_MYGPT=true,RAG_USE_CHATGPT=true,OUTPUT_DIR=./output,TEMP_DIR=./temp,BACKUP_DIR=./backup,LOG_LEVEL=INFO,DEBUG=false,PROJECT_NAME=Darwin,GCP_REGION=asia-northeast1
         
         echo "✅ 新しいアーキテクチャのデプロイ完了！"
         echo "🌐 サービスURL: https://${{ env.SERVICE_NAME }}-${{ env.REGION }}-${{ env.PROJECT_ID }}.a.run.app"
